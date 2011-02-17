@@ -20,6 +20,7 @@ class CodeForNodeTest extends FunSuite {
         </car>
         <car>
           <property doors="four" />
+          <speed>50</speed>
         </car>
       </cars>
       <a><b><c>
@@ -28,15 +29,10 @@ class CodeForNodeTest extends FunSuite {
       </c></b></a>
     </root>
     
-    println("TEST " * 10)
-    
     val root = Type(xml)
     
-    println(root)
-    println("TEST " * 10)
-    
     val msg = "seven subtypes expected:" + root.uniqueSubtypes.mkString(",%n".format())
-    assertEquals(msg, 7, root.uniqueSubtypes.size)
+    assertEquals(msg, 8, root.uniqueSubtypes.size)
     val carField = root.field("cars").fieldType.field("car")
     assertEquals("The 'car' field in 'cars' should be one-to-many:" + carField, Cardinality.OneToMany, carField.cardinality)
   }

@@ -27,7 +27,7 @@ case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : 
 
 object Type {
 
-  private def flattenFields(allFields: Seq[Field]) : Seq[Field] = {
+  private def flattenFields(tn : String, allFields: Seq[Field]) : Seq[Field] = {
 	  def merge(fieldByName : Map[String, Seq[Field]], c : Cardinality) = {
 	      for ((name, fields) <- fieldByName ) yield {
 	         val merged = flattenTypes(fields.map(_.fieldType))
@@ -37,9 +37,6 @@ object Type {
       // convert all these children into a map of field names to fields  
       val fieldsByName = allFields.groupBy(f => f.name)
       val (singleFields, multiFields) = fieldsByName.partition{ case (name, fields) => fields.size == 1 }
-      
-      println("Single Fields: " + singleFields.mkString(","))
-      println("Multi Fields: " + multiFields.keySet.mkString(","))
       
       val flattenedSingleFields = merge(singleFields, OneToOne)
       val flattenedListFields = merge(multiFields, OneToMany)
@@ -53,8 +50,12 @@ object Type {
    * Here we merge the properties for all elements with similar names
    */
   private def flattenTypes(types : Seq[Type]) : Type = {
+    val firstName = types.head.name
+    assert(types.forall(t => t.name == firstName))
     val simples = types.flatMap(t => t.simpleFields)
-    val fields = flattenFields(types.flatMap(t => t.fields))
+    
+    val fields = types.flatMap(t => flattenFields(t.name, t.fields))
+    
     new Type(types.head.name, simples.toSet, fields) 
   }
 
@@ -73,47 +74,40 @@ object Type {
        }
        new Type(root.name, root.simpleFields, newFields)
      }
-     
+
+     /**
+      * for all known types under the 'root' type, if any appear multiple times, then we have to merge their properties
+      * together in order to get a complete picture
+      */     
      def unifyTypes : Map[String, Type] = {
-		 // group all types by their names
 	     val typeByName = root.allSubtypes.groupBy(t => t.name)
-	     
-	     // partition the list into singles (elements which have only appeared once) and 
-	     // elements which have appeared multiple times 
 	     var (singleTypes, multiTypes) = typeByName.partition{ case (name, types) => types.size == 1 }
 	     
-	     println("SINGLE TYPES: " + singleTypes)
-	     println("MULTI TYPES: " + multiTypes)
-	     
 	     // now merge the duplicate elements (elements with the same names)
-	     val flattenedTypes = multiTypes.mapValues{ types => flattenTypes(types.toSeq) }
+	     val flattenedMultiTypes = multiTypes.mapValues{ types => flattenTypes(types.toSeq) }
+	     val flattenedSingleTypes = singleTypes.mapValues{ st =>flattenTypes( st ) }
 	
 	     // finally put the maps back together -- the original "singles" map and our newly flattened (merged) map
-	     val single = singleTypes.mapValues( values => (values.toList : @unchecked) match {
-	             case head :: Nil => head 
-	         })
-	     single ++ flattenedTypes
+	     flattenedSingleTypes ++ flattenedMultiTypes
      }
-     
+
      val typesByName = unifyTypes
      
-     println("Normalizing:%n%s%nUsingTypes By Name: %n%s%n".format(root, typesByName.mkString("%n".format())))
-     
      // update all fields with the unified types
-     update(root){ oldType => typesByName(oldType.name) }
+     update(root) { oldType => typesByName(oldType.name) }
    }
       
    def newType(xml : Node) : Type = {
-
       val attFields = (attributes(xml).keySet + "text").toSet
       val children = xml.nonEmptyChildren.filter { 
         case e : Elem => true
         case other => false
       }
+      
+      children.foreach { case e : Elem => println("%s :: %s".format(name(xml), e.label ))}
       // create a new field for *every* child (we will have duplicates!)
       val allFields = children.map( child => new Field(name(child), newType(child)))
-
-      //new Type(name(xml), attFields, flattenFields(allFields))
+      
       new Type(name(xml), attFields, allFields)
    }
 
