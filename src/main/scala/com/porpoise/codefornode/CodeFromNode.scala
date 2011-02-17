@@ -19,6 +19,7 @@ case class Field(name : String, fieldType : Type, cardinality : Cardinality = On
 case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : Seq[Field] = Nil) {
   def types = fields.map(f => f.fieldType)
   def allSubtypes : Seq[Type] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
+  def uniqueSubtypes = allSubtypes.toSet
   def allSubtypeNames = allSubtypes.map(_.name)
   def complexFieldNames = fields.map(_.toString)
   override def toString = "%s [%s]".format(name, (simpleFields ++ complexFieldNames).mkString(",")) 
@@ -27,6 +28,12 @@ case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : 
 object Type {
 
   private def flattenFields(allFields: Seq[Field]) : Seq[Field] = {
+	  def merge(fieldByName : Map[String, Seq[Field]], c : Cardinality) = {
+	      for ((name, fields) <- fieldByName ) yield {
+	         val merged = flattenTypes(fields.map(_.fieldType))
+	         new Field(name, merged, cardinality=c)
+	      }
+	  }
       // convert all these children into a map of field names to fields  
       val fieldsByName = allFields.groupBy(f => f.name)
       val (singleFields, multiFields) = fieldsByName.partition{ case (name, fields) => fields.size == 1 }
@@ -47,13 +54,6 @@ object Type {
     val fields = flattenFields(types.flatMap(t => t.fields))
     new Type(types.head.name, simples.toSet, fields) 
   }
-  
-  private def merge(fieldByName : Map[String, Seq[Field]], c : Cardinality) = {
-      for ((name, fields) <- fieldByName ) yield {
-         val merged = flattenTypes(fields.map(_.fieldType))
-         new Field(name, merged, cardinality=c)
-      }
-   }
 
    implicit def apply(xml : Node) : Type = newType(xml)(apply _)
 
