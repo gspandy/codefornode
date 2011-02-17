@@ -6,3 +6,5 @@ project/boot
 *log
 .classpath
 .project
+lib
+lib_managed
