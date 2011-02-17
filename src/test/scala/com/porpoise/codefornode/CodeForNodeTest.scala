@@ -33,7 +33,7 @@ class CodeForNodeTest extends FunSuite {
     val msg = "seven subtypes expected:" + root.uniqueSubtypes.mkString(",%n".format())
     assertEquals(msg, 7, root.uniqueSubtypes.size)
     val carField = root.field("cars").fieldType.field("car")
-    assertEquals(Cardinality.OneToMany, carField.cardinality)
+    assertEquals("The 'car' field in 'cars' should be one-to-many:" + carField, Cardinality.OneToMany, carField.cardinality)
   }
   test("multiple xml nodes can be parsed") {
   
