@@ -1,12 +1,10 @@
 package com.porpoise.codefornode
-
 import scala.xml._
 
 object Cardinality extends Enumeration {
   type Cardinality = Value
   val OneToOne, OneToMany = Value
 } 
-
 import Cardinality._
 
 case class Field(name : String, fieldType : Type, cardinality : Cardinality = OneToOne) {
@@ -39,6 +37,9 @@ object Type {
       // convert all these children into a map of field names to fields  
       val fieldsByName = allFields.groupBy(f => f.name)
       val (singleFields, multiFields) = fieldsByName.partition{ case (name, fields) => fields.size == 1 }
+      
+      println("Single Fields: " + singleFields.mkString(","))
+      println("Multi Fields: " + multiFields.keySet.mkString(","))
       
       val flattenedSingleFields = merge(singleFields, OneToOne)
       val flattenedListFields = merge(multiFields, OneToMany)
@@ -79,20 +80,27 @@ object Type {
 	     
 	     // partition the list into singles (elements which have only appeared once) and 
 	     // elements which have appeared multiple times 
-	     var (singleFields, multiFields) = typeByName.partition{ case (name, types) => types.size == 1 }
+	     var (singleTypes, multiTypes) = typeByName.partition{ case (name, types) => types.size == 1 }
+	     
+	     println("SINGLE TYPES: " + singleTypes)
+	     println("MULTI TYPES: " + multiTypes)
 	     
 	     // now merge the duplicate elements (elements with the same names)
-	     val flattenedTypes = multiFields.mapValues{ types => flattenTypes(types.toSeq) }
+	     val flattenedTypes = multiTypes.mapValues{ types => flattenTypes(types.toSeq) }
 	
 	     // finally put the maps back together -- the original "singles" map and our newly flattened (merged) map
-	     val single : Map[String, Type] = singleFields.mapValues{ case head :: Nil => head }     
+	     val single = singleTypes.mapValues( values => (values.toList : @unchecked) match {
+	             case head :: Nil => head 
+	         })
 	     single ++ flattenedTypes
      }
      
-     val allTypes = unifyTypes
+     val typesByName = unifyTypes
+     
+     println("Normalizing:%n%s%nUsingTypes By Name: %n%s%n".format(root, typesByName.mkString("%n".format())))
      
      // update all fields with the unified types
-     update(root){ oldType => allTypes(oldType.name) }
+     update(root){ oldType => typesByName(oldType.name) }
    }
       
    def newType(xml : Node) : Type = {
@@ -105,7 +113,8 @@ object Type {
       // create a new field for *every* child (we will have duplicates!)
       val allFields = children.map( child => new Field(name(child), newType(child)))
 
-      new Type(name(xml), attFields, flattenFields(allFields))
+      //new Type(name(xml), attFields, flattenFields(allFields))
+      new Type(name(xml), attFields, allFields)
    }
 
   def name(xml : NodeSeq) = xml match {
