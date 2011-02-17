@@ -39,24 +39,32 @@ object Type {
 		   </chapters>
 	   </book>
 	   <book name="B2">
-		   <chapters>
-			   <chapter hint="A Page">
-				   <page color="red">some content</page>
-			   </chapter>
-		   </chapters>
+			<chapter name="Some chapter outside a chapters element">
+				<page color="red">some content</page>
+			</chapter>
 	   </book>
    </books>
+
+  private def flattenFields(allFields: Seq[Field]) : Seq[Field] = {
+      // convert all these children into a map of field names to fields  
+      val fieldsByName = allFields.groupBy(f => f.name)
+      val (singleFields, multiFields) = fieldsByName.partition{ case (name, fields) => fields.size == 1 }
+      
+      val flattenedSingleFields = merge(singleFields, OneToOne)
+      val flattenedListFields = merge(multiFields, OneToMany)
+      
+      val fields = flattenedSingleFields ++ flattenedListFields
+      fields.toSeq  
+  }
 
   /**
    * A type may appear once as <book name='asdf' /> and elsewhere as <book id='123' />.
    * Here we merge the properties for all elements with similar names
    */
   private def flattenTypes(types : Seq[Type]) : Type = {
-    val first = types.head
     val simples = types.flatMap(t => t.simpleFields)
-    val fields = types.flatMap(t => t.fields)
-    val mergedType = new Type(first.name, simples.toSet, fields) 
-    mergedType
+    val fields = flattenFields(types.flatMap(t => t.fields))
+    new Type(types.head.name, simples.toSet, fields) 
   }
   
   private def merge(fieldByName : Map[String, Seq[Field]], c : Cardinality) = {
@@ -68,12 +76,19 @@ object Type {
          
    implicit def apply(xml : Node) : Type = newType(xml)(apply _)
 
-   implicit def normalize(root : Type) = {
+   /**
+    * xml nodes may appear at various places/depths in the xml tree.
+    * This function will find duplicate types and merge 'em, then reassign
+    * the fields to point to the new merged types 
+    */
+   def normalize(root : Type) = {
      val typeByName = root.allSubtypes.groupBy(t => t.name)
      val (singleFields, multiFields) = typeByName.partition{ case (name, types) => types.size == 1 }
      
-     // map of type by name
-     multiFields.mapValues{ types => flattenTypes(types.toSeq) }
+     // merge any duplicate types
+     val flattenedTypes = multiFields.mapValues{ types => flattenTypes(types.toSeq) }
+     val allTypes = singleFields ++ flattenedTypes
+     
    }
       
    implicit def newType(xml : Node)( typeFactory : Node => Type) : Type = {
@@ -85,16 +100,8 @@ object Type {
       }
       // create a new field for *every* child (we will have duplicates!)
       val allFields = children.map( child => new Field(name(child), typeFactory(child)))
-      
-      // convert all these children into a map of field names to fields  
-      val fieldsByName = allFields.groupBy(f => f.name)
-      val (singleFields, multiFields) = fieldsByName.partition{ case (name, fields) => fields.size == 1 }
-      
-      val flattenedSingleFields = merge(singleFields, OneToOne)
-      val flattenedListFields = merge(multiFields, OneToMany)
-      
-      val fields = flattenedSingleFields ++ flattenedListFields  
-      new Type(name(xml), attFields, fields.toSeq)
+
+      new Type(name(xml), attFields, flattenFields(allFields))
    }
 
   def name(xml : NodeSeq) = xml match {
