@@ -2,9 +2,20 @@ package com.porpoise.codefornode
 
 import scala.xml._
 
-case class Field(name : String, fieldType : Type)
+case class Field(name : String, type : Type, defaultValue: Option[String] = None)
 
-case class Type(name : String, fields : Seq[Field])
+class Type(name : String, fields : Seq[Field] = Nil)
+
+object Type {
+
+   def apply(xml : NodeSeq) = {
+     
+
+   
+   }
+
+}
+
 
 object CodeFromNode {
 
@@ -17,11 +28,21 @@ object CodeFromNode {
 
   def attributes(xml : Node) = xml.attributes.asAttrMap
 
-  def asCode(xml : NodeSeq) = {
+  def asCode(xml : NodeSeq) : Map[String, Type] = {
 
-    val typeMap : Map[String,Type] = Map.empty
+    var typeMap : Map[String,Type] = Map.empty
 
-    
+    for (node <- xml;
+         typeName = name(node);
+         if (!typeName.contains("anon"))) {
+
+       var t = typeMap.getOrElse(typeName, Type(typeName))
+       var fields = attributes(node) map ( (k,v) => Field(k, Some(v)) )
+       
+
+       typeMap = typeMap + (typeName -> t)
+       typeMap = typeMap ++ asCode(node)
+    }
 
     typeMap
   }
