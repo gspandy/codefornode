@@ -4,8 +4,6 @@ import scala.xml._
 
 object TestXml {
 
-   def n = Type.normalize(Type(xml))
-
    def xml = <books>
 	   <book name="Oliver Twist">
 		   <chapters>

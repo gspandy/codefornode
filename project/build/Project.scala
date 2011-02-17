@@ -18,6 +18,6 @@ class Project(info: ProjectInfo) extends sbt.DefaultProject(info) {
   Resolver.file("Local Maven repository", new File(Path.userHome + "/.m2/repository"))
 
   val junit = "junit" % "junit" % "4.8.2" % "test"
-  val gen = "com.porpoise" % "gen" % "1.0.0-SNAPSHOT"
   val scalatest = "org.scalatest" % "scalatest" % "1.2" % "test"
+  //val gen = "com.porpoise" % "gen" % "1.0.0-SNAPSHOT"
 }

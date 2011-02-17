@@ -17,6 +17,7 @@ case class Field(name : String, fieldType : Type, cardinality : Cardinality = On
 }
 
 case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : Seq[Field] = Nil) {
+  def field(name : String) = fields.find(_.name == name).get
   lazy val types = fields.map(f => f.fieldType)
   lazy val isEmpty = (simpleFields - "text").isEmpty && fields.isEmpty 
   lazy val allSubtypes : Seq[Type] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
