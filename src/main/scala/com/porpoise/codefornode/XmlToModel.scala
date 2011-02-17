@@ -12,15 +12,23 @@ object XmlToModel {
   
     def addDef(container : Namespace, newType : Type) : BeanModel = {
 		if (container.getDefinition(newType.name) == null) {
-		  val newDef = container.addDefinition(newType.name)
-		  for (att <- newType.simpleFields) { newDef.addField(att) }
-		  for (f <- newType.fields) { 
-		    val newField = newDef.addField(f.name).setType(f.fieldType.name)
-		    if (f.cardinality == OneToMany) {
-		      newField.setCollectionType(CollectionType.LIST)
+	        if (!newType.isEmpty) {
+			  val newDef = container.addDefinition(newType.name)
+			  for (att <- newType.simpleFields) { newDef.addField(att) }
+			  for (f <- newType.fields) {
+			    val newField = newDef.addField(f.name)
+			    
+			    if (!f.fieldType.isEmpty) {
+				    newField.setType(f.fieldType.name)
+			    }
+			    if (f.cardinality == OneToMany) {
+			      newField.setCollectionType(CollectionType.LIST)
+			    }
+			  }
+		    } else {
+		      println("%s is empty... ignoring".format(newType.name))
 		    }
-		  }
-	    }
+        }
 	    
 	    newType.fields.foreach( f => addDef(container, f.fieldType) )
 	    container.getModel()

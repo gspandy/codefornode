@@ -12,16 +12,17 @@ import Cardinality._
 case class Field(name : String, fieldType : Type, cardinality : Cardinality = OneToOne) {
   def attribute(index : Int) = fieldType.fields(index)
   def apply(index : Int) = fieldType.fields(index)
-  def cardString = if (cardinality == OneToOne) "1" else "*"
+  lazy val cardString = if (cardinality == OneToOne) "1" else "*"
   override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)   
 }
 
 case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : Seq[Field] = Nil) {
-  def types = fields.map(f => f.fieldType)
-  def allSubtypes : Seq[Type] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
-  def uniqueSubtypes = allSubtypes.toSet
-  def allSubtypeNames = allSubtypes.map(_.name)
-  def complexFieldNames = fields.map(_.toString)
+  lazy val types = fields.map(f => f.fieldType)
+  lazy val isEmpty = (simpleFields - "text").isEmpty && fields.isEmpty 
+  lazy val allSubtypes : Seq[Type] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
+  lazy val uniqueSubtypes = allSubtypes.toSet
+  lazy val allSubtypeNames = allSubtypes.map(_.name)
+  lazy val complexFieldNames = fields.map(_.toString)
   override def toString = "%s [%s]".format(name, (simpleFields ++ complexFieldNames).mkString(",")) 
 }
 
