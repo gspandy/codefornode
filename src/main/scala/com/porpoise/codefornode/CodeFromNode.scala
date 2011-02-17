@@ -11,7 +11,7 @@ import Cardinality._
 
 case class Field(name : String, fieldType : Type, cardinality : Cardinality = OneToOne, defaultValue: Option[String] = None)
 
-case class Type(name : String, simpleFields : Seq[String] = Nil, fields : Seq[Field] = Nil)
+case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : Seq[Field] = Nil)
 
 object Type {
 
@@ -30,19 +30,22 @@ object Type {
    * A type may appear once as <book name='asdf' /> and elsewhere as <book id='123' />.
    * Here we merge the properties for all elements with similar names
    */
-  def flatten(types : Seq[Type]) : Type =  {
-    types.head
+  def flattenTypes(types : Seq[Type]) : Type = {
+    val first = types.head
+    val simples = types.flatMap(t => t.simpleFields)
+    val mergedType = new Type(first.name, simples.toSet) 
+    mergedType
   }
   
    private def merge(fieldByName : Map[String, Seq[Field]], c : Cardinality) = {
       for ((name, fields) <- fieldByName ) yield {
-         val merged = flatten(fields.map(_.fieldType))
+         val merged = flattenTypes(fields.map(_.fieldType))
          new Field(name, merged, cardinality=c)
       }
    }
   
    implicit def apply(xml : Node) : Type = {
-      val attFields = (attributes(xml).keySet + "text").toSeq
+      val attFields = (attributes(xml).keySet + "text").toSet
       val children = xml.nonEmptyChildren.filter { 
         case e : Elem => true
         case other => false
