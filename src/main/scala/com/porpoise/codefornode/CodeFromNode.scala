@@ -55,7 +55,7 @@ object Type {
     new Type(types.head.name, simples.toSet, fields) 
   }
 
-   implicit def apply(xml : Node) : Type = newType(xml)(apply _)
+   implicit def apply(xml : Node) : Type = normalize(newType(xml))
 
    /**
     * xml nodes may appear at various places/depths in the xml tree.
@@ -93,7 +93,7 @@ object Type {
      update(root){ oldType => allTypes(oldType.name) }
    }
       
-   implicit def newType(xml : Node)( typeFactory : Node => Type) : Type = {
+   def newType(xml : Node) : Type = {
 
       val attFields = (attributes(xml).keySet + "text").toSet
       val children = xml.nonEmptyChildren.filter { 
@@ -101,7 +101,7 @@ object Type {
         case other => false
       }
       // create a new field for *every* child (we will have duplicates!)
-      val allFields = children.map( child => new Field(name(child), typeFactory(child)))
+      val allFields = children.map( child => new Field(name(child), newType(child)))
 
       new Type(name(xml), attFields, flattenFields(allFields))
    }
