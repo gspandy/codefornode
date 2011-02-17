@@ -86,15 +86,20 @@ object Type {
 	     // now merge the duplicate elements (elements with the same names)
 	     val flattenedMultiTypes = multiTypes.mapValues{ types => flattenTypes(types.toSeq) }
 	     val flattenedSingleTypes = singleTypes.mapValues{ st =>flattenTypes( st ) }
-	
+	     
+	     val rt = flattenTypes(root :: Nil)
+	     val flattenedRoot = root.name -> rt
+	     
 	     // finally put the maps back together -- the original "singles" map and our newly flattened (merged) map
-	     flattenedSingleTypes ++ flattenedMultiTypes
+	     val subTypes = flattenedSingleTypes ++ flattenedMultiTypes
+	     subTypes + flattenedRoot
      }
 
      val typesByName = unifyTypes
      
      // update all fields with the unified types
-     update(root) { oldType => typesByName(oldType.name) }
+     val newRoot = typesByName(root.name)
+     update(newRoot) { oldType => typesByName(oldType.name) }
    }
       
    def newType(xml : Node) : Type = {
