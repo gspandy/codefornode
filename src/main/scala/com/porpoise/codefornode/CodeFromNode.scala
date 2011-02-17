@@ -13,16 +13,15 @@ case class Field(name : String, fieldType : Type, cardinality : Cardinality = On
   def attribute(index : Int) = fieldType.fields(index)
   def apply(index : Int) = fieldType.fields(index)
   def cardString = if (cardinality == OneToOne) "1" else "*"
-  override def toString = "%s:%s%s".format(name, fieldType.name, cardString)   
+  override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)   
 }
-
 
 case class Type(name : String, simpleFields : Set[String] = Set.empty, fields : Seq[Field] = Nil) {
   def types = fields.map(f => f.fieldType)
   def allSubtypes : Iterable[Type] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
   def allSubtypeNames = allSubtypes.map(_.name)
   def complexFieldNames = fields.map(_.toString)
-  override def toString = "%s [%s]".format((simpleFields ++ complexFieldNames).mkString(",")) 
+  override def toString = "%s [%s]".format(name, (simpleFields ++ complexFieldNames).mkString(",")) 
 }
 
 object Type {
