@@ -6,15 +6,15 @@ import Cardinality._
 
 object XmlToModel {
 
-  def xmlToModel(namespace : String, node : Node) = typeToModel(namespace, Type(node))
+  def xmlToModel(namespace : String, node : Node) = typeToModel(namespace, CodeForNode(node))
+
+  def typeToModel(namespace : String, t : XmlType) = {
   
-  def typeToModel(namespace : String, t : Type) = {
-  
-    def addDef(container : Namespace, newType : Type) : BeanModel = {
+    def addDef(container : Namespace, newType : XmlType) : BeanModel = {
 		if (container.getDefinition(newType.name) == null) {
 	        if (!newType.isEmpty) {
 			  val newDef = container.addDefinition(newType.name)
-			  for (att <- newType.simpleFields) { newDef.addField(att) }
+			  for (att <- newType.allAttributes) { newDef.addField(att) }
 			  for (f <- newType.fields) {
 			    val newField = newDef.addField(f.name)
 			    

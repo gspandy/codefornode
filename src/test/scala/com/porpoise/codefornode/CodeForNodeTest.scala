@@ -7,60 +7,47 @@ import org.junit.Assert._
 
 @RunWith(classOf[JUnitRunner])
 class CodeForNodeTest extends FunSuite {
+    val xml = <root age="123" name="dave">
+       <alpha some="property">
+         <beta occurrence="1">
+            <amount>0.03</amount>
+            <various>17</various>
+            <booleanField>true</booleanField>
+            <items name="here I appear once" />
+         </beta>
+         <beta second="occurrence">
+            <amount>10</amount>
+            <items name="here I appear a couple times" />
+            <items name="see? I told you!" />
+            <dave>
+               <alpha hello="again" />
+               <creationDate>2011-12-12</creationDate>
+               <someNumber>4</someNumber>
+            </dave>
+            <various>here I'm some text</various>
+            <booleanField>false</booleanField>
+         </beta>
+       </alpha>
+    </root>
 
-  test("xml nodes at different levels will be merged and have the correct cardinality") {
-    val xml = <root>
-      <house>
-        <property name="Pentagon" />
-      </house>    
-      <cars>
-        <car>
-          <property color="Red" />
-          <property age="12" />
-        </car>
-        <car>
-          <property doors="four" />
-          <speed>50</speed>
-        </car>
-      </cars>
-      <a><b><c>
-         <property alphabet="true" />
-         <property yetAnother="property" />
-      </c></b></a>
-    </root>
-    
-    val root = Type(xml)
-    
-    val msg = "seven subtypes expected:" + root.uniqueSubtypes.mkString(",%n".format())
-    assertEquals(msg, 8, root.uniqueSubtypes.size)
-    val carField = root.field("cars").fieldType.field("car")
-    assertEquals("The 'car' field in 'cars' should be one-to-many:" + carField, Cardinality.OneToMany, carField.cardinality)
+
+  test("asTypes can convert xml into XmlType representation") {
+    val typesByName = CodeForNode.asTypes(xml)
   }
-  
-   test("multiple xml nodes can be parsed") {
-  
-    val xml = <root>
-     <things name="more stuff, but only one thing this time">
-       <item name="Gamma" />
-     </things>    
-     <things name="just some stuff">
-       <item name="Alpha" />
-       <item name="Beta" />
-     </things>
-    </root>
-   
-    val root = Type(xml)
-   
-    assertEquals("Root should have a 'things' field: " + root.fields, 1, root.fields.size)
-    assertEquals("'things' should have a one-to-many cardinality", Cardinality.OneToMany, root.fields(0).cardinality)
-   
-    val thingsType = root.fields(0).fieldType
-    assertEquals("'things' should have one complex field: " + thingsType.fields, 1, thingsType.fields.size)
-    assertTrue("'things' should a 'name' attribute", thingsType.simpleFields.contains("name"))
-   
-    val itemType = thingsType.fields(0).fieldType
-    assertEquals("the 'items' field should be one to many", Cardinality.OneToMany, thingsType.fields(0).cardinality)
-    assertTrue("'items' should have no complex fields: " + itemType.fields, itemType.fields.isEmpty)
-    assertTrue("'items' should have a 'name' attribute", itemType.simpleFields.contains("name"))
+
+  test("nodesByName returns a map of all xml elements by their element name") {
+
+    val nodesByName = CodeForNode.nodesByName(xml)
+    val nodesNames = nodesByName.keySet
+    
+    val expected = List("root", "alpha", "beta", "dave", "amount", "creationDate", "someNumber", "items", "booleanField", "various")
+    val diff = expected filterNot (nodesNames contains)
+    assertEquals(expected.size, nodesNames.size)    
+    assertTrue("unexpected elements: " + diff, diff.isEmpty)    
+    assertEquals(1, nodesByName("root").size)    
+    assertEquals(2, nodesByName("beta").size)    
+    assertEquals(1, nodesByName("dave").size)    
+    assertEquals(2, nodesByName("alpha").size)
   }
+
 }
