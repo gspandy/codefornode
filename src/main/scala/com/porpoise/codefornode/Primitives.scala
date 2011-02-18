@@ -51,15 +51,17 @@ object STRING extends Primitive {
 object DATE extends Primitive {
   import java.text.{SimpleDateFormat => SDF}
   val formatters = List(new SDF("dd/MM/yyyy"),new SDF("yyyy/MM/dd"), new SDF("yyyy-MM-dd"),new SDF("dd-MM-yyyy")) 
+  formatters.foreach(_.setLenient(false))
   def parse(str : String) : Option[Date] = {
-    for( f <- formatters) {
+    var option : Option[Date] = None
+    for( f <- formatters; if (option == None) ) {
 	    try { 
-	      return Some(f.parse(str))
+	      option = Some(f.parse(str))
 	    } catch {
 	      case e => 
 	    }
     }
-    return None
+    return option
   }
   implicit def apply(str : String) = parse(str)
   implicit def unapply(str : String) = {
