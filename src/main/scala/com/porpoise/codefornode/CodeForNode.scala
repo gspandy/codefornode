@@ -110,7 +110,7 @@ object CodeForNode {
   
   def mergeXml(xml : Seq[Node]) : XmlType = {
     import RichNode._
-    val merged = new MutableType()
+    (new MutableType() /: xml) { }
     
     merged
   }
