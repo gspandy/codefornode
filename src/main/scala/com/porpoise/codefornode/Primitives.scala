@@ -13,8 +13,8 @@ object Primitive {
   implicit def apply(str : String) = {
     str match {
       case DATE(str) => DATE
-      case DEC(str) => DEC
       case INT(str) => INT
+      case DEC(str) => DEC
       case STRING(str) => STRING
     }
   }
@@ -28,8 +28,7 @@ object INT extends Primitive {
   }
   def unapply(str : String) = {
     try { 
-      str.toInt
-      Some(INT)
+      Some(str.toInt)
     } catch {
       case e => None
     }
@@ -38,19 +37,18 @@ object INT extends Primitive {
 object DEC extends Primitive {
   def unapply(str : String) = {
     try { 
-      str.toDouble
-      Some(DEC)
+      Some(BigDecimal(str))
     } catch {
       case e => None
     }
   }
 }
 object STRING extends Primitive {
-  def unapply(str : String) = Some(STRING)
+  def unapply(str : String) = Some(str)
 }
 object DATE extends Primitive {
   import java.text.{SimpleDateFormat => SDF}
-  val formatters = List(new SDF("dd/MM/yyyy"),new SDF("yyyy/MM/dd"), new SDF("yyyy-MM-dd"),new SDF("dd-MM-yyyy")) 
+  val formatters = List("yyyy.MM.dd", "dd.MM.yyyy", "dd/MM/yyyy","yyyy/MM/dd", "yyyy-MM-dd", "dd-MM-yyyy") map (new SDF(_)) 
   formatters.foreach(_.setLenient(false))
   def parse(str : String) : Option[Date] = {
     var option : Option[Date] = None
@@ -66,7 +64,7 @@ object DATE extends Primitive {
   implicit def apply(str : String) = parse(str)
   implicit def unapply(str : String) = {
     parse(str) match {
-      case Some(_) => Some(DATE)
+      case Some(_) => Some(parse(str))
       case None => None
     }
   }
