@@ -35,6 +35,10 @@ class CodeForNodeTest extends FunSuite {
     val typesByName = CodeForNode.asTypes(xml)
   }
 
+  test("an xml element can be converted to an XmlType") {
+    val types = XmlType.asTypes(xml)("beta")
+  }
+  
   test("nodesByName returns a map of all xml elements by their element name") {
 
     val nodesByName = CodeForNode.nodesByName(xml)

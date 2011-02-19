@@ -21,6 +21,25 @@ class PrimitivesTest extends FunSuite {
       assertEquals(DATE, Primitive("01.02.2011"))
       assertEquals(STRING, Primitive("123FourFiveSix"))
   }
-  test("a integer can be promoted to a big decimal") {
+  test("an integer can be promoted to a big decimal") {
+      var primType = Primitive("123") 
+      assertEquals(INT, primType)
+      primType = primType.merge(Primitive("1.23"))
+      assertEquals(DEC, primType)
+  }
+  test("merging an integer with an integer will stay an integer") {
+      var primType = Primitive("123") 
+      assertEquals(INT, primType)
+      primType = primType.merge(Primitive("456"))
+      assertEquals(INT, primType)
+  }
+  test("merging a decimal with a decimal will stay a decimal") {
+      var primType = Primitive("12.3") 
+      assertEquals(DEC, primType)
+      primType = primType.merge(Primitive("45.6"))
+      assertEquals(DEC, primType)
+  }
+  test("a big decimal, int or date reduces to a string") {
+
   }
 }

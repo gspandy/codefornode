@@ -46,6 +46,18 @@ class MutableType extends XmlType {
   override val fields = mutable.ListBuffer()
 }
 
+object XmlType {
+
+   implicit def apply(xml : Node) : XmlType = {
+     new MutableType()
+   }
+   
+   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
+       val xmlByName = CodeForNode.nodesByName(xml)
+       xmlByName.mapValues( CodeForNode.mergeXml(_) )
+   }
+}
+
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -63,12 +75,23 @@ object RichNode {
   implicit def apply(xml : Elem) = new RichNode(xml)
 }
 
+/**
+ *
+ */
 object CodeForNode {
 
   def apply(xml : NodeSeq) = {
     val types = asTypes(xml)
     xml.head match { case e : Elem => types(e.label) }
   }
+  
+  def name(xml : NodeSeq) = xml match {
+    case e : Elem => e.label
+    case other => other.getClass.getSimpleName
+  }
+
+  /** get the attributes as a map of attribute names to their primitive type */
+  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => Primitive(str))
 
   /** convert the nodes to a one-to-may map of xml nodes by their element name */
   def nodesByName(nodes : NodeSeq) : Map[String, List[Node]] = {
@@ -96,19 +119,4 @@ object CodeForNode {
     val nodesMap = nodesByName(xml)
     nodesMap.mapValues(mergeXml _)
   }
-}
-
-object Type {
-
-   implicit def apply(xml : Node) : XmlType = {
-     new MutableType()
-   }
-
-
-  def name(xml : NodeSeq) = xml match {
-    case e : Elem => e.label
-    case other => other.getClass.getSimpleName
-  }
-
-  def attributes(xml : Node) = xml.attributes.asAttrMap
 }
