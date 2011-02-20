@@ -34,22 +34,24 @@ trait XmlType {
   lazy val uniqueSubtypes = allSubtypes.toSet
   lazy val allSubtypeNames = allSubtypes.map(_.name)
   lazy val complexFieldNames = fields.map(_.toString)
+  
+  def merge(other : XmlType) = other
 }
 
 
-class MutableType extends XmlType {
-  var name : String = ""
-  override val intAttributes : Set[String] = mutable.Set.empty
-  override val decimalAttributes : Set[String] = mutable.Set.empty
-  override val stringAttributes : Set[String] = mutable.Set.empty
-  override val dateAttributes : Set[String] = mutable.Set.empty
-  override val fields = mutable.ListBuffer()
-}
+case class Type(
+  name : String = "",
+  override val intAttributes : Set[String] = Set.empty,
+  override val decimalAttributes : Set[String] = Set.empty,
+  override val stringAttributes : Set[String] = Set.empty,
+  override val dateAttributes : Set[String] = Set.empty,
+  override val fields : Seq[XmlField] = Nil)
+extends XmlType
 
 object XmlType {
 
    implicit def apply(xml : Node) : XmlType = {
-     new MutableType()
+     new Type()
    }
    
    def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
@@ -57,7 +59,7 @@ object XmlType {
        xmlByName.mapValues( CodeForNode.mergeXml(_) )
    }
 }
-
+import XmlType.apply
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -109,10 +111,8 @@ object CodeForNode {
   }
   
   def mergeXml(xml : Seq[Node]) : XmlType = {
-    import RichNode._
-    (new MutableType() /: xml) { }
-    
-    merged
+    val first : XmlType = new Type()
+    (first /: xml) { (xmlType, node) => xmlType.merge(node) } 
   }
   
   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
