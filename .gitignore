@@ -8,3 +8,4 @@ project/boot
 .project
 lib
 lib_managed
+project/plugins

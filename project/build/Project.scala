@@ -1,7 +1,8 @@
 import java.io.File
 import sbt._
+import reaktor.scct.ScctProject
 
-class Project(info: ProjectInfo) extends sbt.DefaultProject(info) {
+class Project(info: ProjectInfo) extends DefaultProject(info) with ScctProject {
   self =>
   this
 

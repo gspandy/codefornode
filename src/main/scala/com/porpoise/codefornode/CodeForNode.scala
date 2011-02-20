@@ -49,10 +49,6 @@ trait XmlType {
   def merge(other : XmlType) = other
 }
 
-class Type(override val name : String = "", fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
-  lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
-  lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
-}
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -66,6 +62,11 @@ object Maps {
 /** */
 object CodeForNode {
 
+  class Type(override val name : String = "", fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
+    lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
+    lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
+  }
+
   def apply(xml : NodeSeq) = {
     val types = asTypes(xml)
     xml.head match { case e : Elem => types(e.label) }
@@ -78,9 +79,7 @@ object CodeForNode {
     nodes.foreach { 
       case elem : Elem => nodeByName = Maps.mergeMaps( 
         append(elem), 
-        nodesByName(elem.child)) { (nodesOne,nodesTwo) => 
-           nodesOne ::: nodesTwo
-        }
+        nodesByName(elem.child)) { (nodesOne,nodesTwo) => nodesOne ::: nodesTwo }
       case node : Node => // ignore others
     }
     nodeByName
@@ -106,7 +105,10 @@ object CodeForNode {
 
     val nodesMap = nodesByName(xml)
     
-    def newType(n : Node) : XmlType = new Type(name(n), typeLookup = typesByName.apply _)
+    def newType(n : Node) : XmlType = {
+        
+        new Type(name(n), typeLookup = typesByName.apply _)
+    }
 
     def mergeXml(xml : Seq[Node]) : XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
 
