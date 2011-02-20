@@ -40,6 +40,43 @@ class CodeForNodeTest extends FunSuite {
     assertEquals(List("amount", "items", "items", "dave", "various", "booleanField"), kids.map(_.label).toList)
   }
   
+  test("singlesAndMultiples will return a tuple consisting of a collection of single occuring elements and multiple occurring ones") {
+      val (s, m) = CodeForNode.singlesAndMultiples(List("a","b","c","b"))
+      assertEquals("a,c", s.mkString(","))
+      assertEquals("b", m.mkString(","))
+  }
+  
+  test("asPrimitiveOption can return a primitive for some xml") {
+      val intXmlA = <integer>1</integer>
+      val intXmlB = <i>16<subnode /></i>
+      val intXmlC = <i inva="lid">16</i>
+      
+      val decXmlA = <dec>1.2</dec>
+      val decXmlB = <d>1.6<subnode /></d>
+      val decXmlC = <d ina="lid">1.6</d>
+      
+      val dateXmlA = <date>2010-10-10</date>
+      val dateXmlB = <d>2010-10-10<subnode /></d>
+      val dateXmlC = <d ina="lid">2010-10-10</d>
+      
+      val boolXmlA = <b>true</b>
+      val boolXmlB = <b>false<subnode /></b>
+      val boolXmlC = <b ina="lid">true</b>
+
+      assertEquals(STRING, CodeForNode.asPrimitiveOption(List(intXmlA, decXmlA, dateXmlA,boolXmlA)).get)
+      assertEquals(INT, CodeForNode.asPrimitiveOption(List(intXmlA, intXmlA)).get)
+      assertEquals(DEC, CodeForNode.asPrimitiveOption(List(intXmlA, decXmlA)).get)
+      assertEquals(BOOL, CodeForNode.asPrimitiveOption(List(boolXmlA, boolXmlA)).get)
+            
+      // assert any mixture of invalid elements result in a None
+      assertFalse(CodeForNode.asPrimitiveOption(List(intXmlA, intXmlB)).isDefined)
+      assertFalse(CodeForNode.asPrimitiveOption(List(intXmlA, intXmlC)).isDefined)
+      assertFalse(CodeForNode.asPrimitiveOption(List(decXmlA, decXmlB)).isDefined)
+      assertFalse(CodeForNode.asPrimitiveOption(List(decXmlA, decXmlC)).isDefined)
+      assertFalse(CodeForNode.asPrimitiveOption(List(dateXmlA, dateXmlB)).isDefined)
+      assertFalse(CodeForNode.asPrimitiveOption(List(dateXmlA, dateXmlC)).isDefined)
+  }
+  
   test("an xml element can be converted to an XmlType") {
     val types = CodeForNode.asTypes(xml)("beta")
   }

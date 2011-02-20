@@ -16,6 +16,7 @@ object Primitive {
       case DATE(str) => DATE
       case INT(str) => INT
       case DEC(str) => DEC
+      case BOOL(str) => BOOL
       case STRING(str) => STRING
     }
   }
@@ -31,6 +32,15 @@ object INT extends Primitive {
   def unapply(str : String) = {
     try { 
       Some(str.toInt)
+    } catch {
+      case e => None
+    }
+  }
+}
+object BOOL extends Primitive {
+  def unapply(str : String) = {
+    try { 
+      Some(str.toBoolean)
     } catch {
       case e => None
     }
