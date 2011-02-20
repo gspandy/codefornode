@@ -8,4 +8,5 @@ project/boot
 .project
 lib
 lib_managed
-project/plugins
+project/plugins/project
+project/plugins/src_managed
