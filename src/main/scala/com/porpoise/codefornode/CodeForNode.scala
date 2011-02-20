@@ -46,9 +46,19 @@ trait XmlType {
   lazy val allSubtypeNames = allSubtypes.map(_.name)
   lazy val complexFieldNames = fields.map(_.toString)
   
-  def merge(other : XmlType) = other
+  def merge(other : XmlType) = {
+      assert(other.name == name)
+      val allAtts = attributes ++ other.attributes
+      val allFields = fields ++ other.fields
+      val merged = new XmlTypeImpl(name, allAtts, allFields)
+      merged
+  }
 }
-
+private[codefornode] case class XmlTypeImpl(
+    override val name : String,
+    override val attributes : Map[String, XmlAttribute],
+    override val fields : Seq[XmlField]
+    ) extends XmlType
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -99,12 +109,7 @@ object CodeForNode {
 
   /** get the attributes as a map of attribute names to their primitive type */
   def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => XmlAttribute(str, Primitive(str)))
-  
-  def singlesAndMultiples[A](elements : Seq[A]) = {
-        val sAndM = elements partition (n => elements.count( _ == n) == 1)
-        (sAndM._1.toList, sAndM._2.toSet)
-  }
-  
+
   /** try and convert all the given nodes to a primitive type*/
   def asPrimitiveOption(nodes : Seq[Node]) : Option[Primitive] = {
       def primOpt(e : Node) = {

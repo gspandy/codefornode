@@ -40,12 +40,6 @@ class CodeForNodeTest extends FunSuite {
     assertEquals(List("amount", "items", "items", "dave", "various", "booleanField"), kids.map(_.label).toList)
   }
   
-  test("singlesAndMultiples will return a tuple consisting of a collection of single occuring elements and multiple occurring ones") {
-      val (s, m) = CodeForNode.singlesAndMultiples(List("a","b","c","b"))
-      assertEquals("a,c", s.mkString(","))
-      assertEquals("b", m.mkString(","))
-  }
-  
   test("asPrimitiveOption can return a primitive for some xml") {
       val intXmlA = <integer>1</integer>
       val intXmlB = <i>16<subnode /></i>
