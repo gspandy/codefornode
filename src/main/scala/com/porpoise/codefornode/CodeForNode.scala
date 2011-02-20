@@ -8,6 +8,12 @@ object Cardinality extends Enumeration {
 } 
 import Cardinality._
 
+object AnnotationType extends Enumeration {
+  type AnnotationType = Value
+  val ATTRIBUTE, ELEMENT = Value
+} 
+import AnnotationType._
+import Cardinality._
 
 trait XmlField {
   def name : String
@@ -17,15 +23,20 @@ trait XmlField {
   lazy val cardString = if (cardinality == OneToOne) "1" else "*"
   override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)   
 }
+object XmlField {
+    
+    case class Field(override val name:String, override val fieldType:XmlType, override val cardinality : Cardinality) extends XmlField
+    
+    def apply(name : String, xmlType : XmlType, cardinality : Cardinality = OneToOne) = Field(name, xmlType, cardinality)
+}
+
+case class XmlAttribute(name : String, attType : Primitive, annotationType : AnnotationType = ATTRIBUTE)
 
 trait XmlType {
   def name : String
-  def intAttributes : Set[String] = Set.empty
-  def decimalAttributes : Set[String] = Set.empty
-  def stringAttributes : Set[String] = Set.empty
-  def dateAttributes : Set[String] = Set.empty
+  def attributes : Map[String, XmlAttribute] = Map.empty
   def fields : Seq[XmlField]
-  lazy val allAttributes = intAttributes ++ stringAttributes ++ dateAttributes
+  lazy val allAttributes = attributes.values
   
   def field(name : String) = fields.find(_.name == name).get
   lazy val types = fields.map(f => f.fieldType)
@@ -38,28 +49,10 @@ trait XmlType {
   def merge(other : XmlType) = other
 }
 
-
-case class Type(
-  name : String = "",
-  override val intAttributes : Set[String] = Set.empty,
-  override val decimalAttributes : Set[String] = Set.empty,
-  override val stringAttributes : Set[String] = Set.empty,
-  override val dateAttributes : Set[String] = Set.empty,
-  override val fields : Seq[XmlField] = Nil)
-extends XmlType
-
-object XmlType {
-
-   implicit def apply(xml : Node) : XmlType = {
-     new Type()
-   }
-   
-   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
-       val xmlByName = CodeForNode.nodesByName(xml)
-       xmlByName.mapValues( CodeForNode.mergeXml(_) )
-   }
+class Type(name : String = "", fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
+  lazy override val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
+  lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
 }
-import XmlType.apply
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -70,30 +63,13 @@ object Maps {
   }
 }
 
-class RichNode(xml : Elem) {
-
-}
-object RichNode {
-  implicit def apply(xml : Elem) = new RichNode(xml)
-}
-
-/**
- *
- */
+/** */
 object CodeForNode {
 
   def apply(xml : NodeSeq) = {
     val types = asTypes(xml)
     xml.head match { case e : Elem => types(e.label) }
   }
-  
-  def name(xml : NodeSeq) = xml match {
-    case e : Elem => e.label
-    case other => other.getClass.getSimpleName
-  }
-
-  /** get the attributes as a map of attribute names to their primitive type */
-  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => Primitive(str))
 
   /** convert the nodes to a one-to-may map of xml nodes by their element name */
   def nodesByName(nodes : NodeSeq) : Map[String, List[Node]] = {
@@ -110,13 +86,40 @@ object CodeForNode {
     nodeByName
   }
   
-  def mergeXml(xml : Seq[Node]) : XmlType = {
-    val first : XmlType = new Type()
-    (first /: xml) { (xmlType, node) => xmlType.merge(node) } 
+  def partitionChildren(xml : Node) = xml.child.partition { 
+    case e : Elem => true
+    case other => false
   }
+   
+  def elemChildren(xml : Node) = partitionChildren(xml : Node)._1
+
+  def name(xml : NodeSeq) = xml match {
+    case e : Elem => e.label
+    case other => other.getClass.getSimpleName
+  }
+
+  /** get the attributes as a map of attribute names to their primitive type */
+  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => Primitive(str))
+  
   
   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
+    class Types {
+      var typesByName : Map[String, XmlType] = Map.empty
+      def addAll(types : Map[String, XmlType]) = typesByName = typesByName ++ types 
+      def get(name : String) = typesByName(name)
+    }
     val nodesMap = nodesByName(xml)
-    nodesMap.mapValues(mergeXml _)
+    
+    val types = new Types()
+    
+    implicit def newType(n : Node) = new Type(name(n), typeLookup = types.get _)
+
+    def mergeXml(xml : Seq[Node]) : XmlType = {
+      val first : XmlType = xml.head
+      (first /: xml) { (xmlType, node) => xmlType.merge(node) } 
+    }
+
+    types.addAll(nodesMap.mapValues(mergeXml _))
+    types.typesByName
   }
 }

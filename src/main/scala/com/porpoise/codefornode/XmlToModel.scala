@@ -3,6 +3,7 @@ package com.porpoise.codefornode
 import com.porpoise.gen.beans.model._
 import scala.xml._
 import Cardinality._
+import AnnotationType._
 
 object XmlToModel {
 
@@ -14,7 +15,15 @@ object XmlToModel {
 		if (container.getDefinition(newType.name) == null) {
 	        if (!newType.isEmpty) {
 			  val newDef = container.addDefinition(newType.name)
-			  for (att <- newType.allAttributes) { newDef.addField(att) }
+			  for (att <- newType.allAttributes) { 
+			      val newField = newDef.addField(att.name)
+			      val a = att.annotationType match {
+			          case ATTRIBUTE => "@XmlAttribute"
+			          case ELEMENT => "@XmlElement"
+			      }
+			      newField.setAnnotations(a)
+			      
+			  }
 			  for (f <- newType.fields) {
 			    val newField = newDef.addField(f.name)
 			    
