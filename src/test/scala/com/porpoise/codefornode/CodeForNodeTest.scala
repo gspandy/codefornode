@@ -34,7 +34,12 @@ class CodeForNodeTest extends FunSuite {
   test("asTypes can convert xml into XmlType representation") {
     val typesByName = CodeForNode.asTypes(xml)
   }
-
+  
+  test("elemChildren returns a list of element xml child nodes") {
+    val kids = CodeForNode.elemChildren((xml \\ "beta").toList.last)
+    assertEquals(List("amount", "items", "items", "dave", "various", "booleanField"), kids.map(_.label).toList)
+  }
+  
   test("an xml element can be converted to an XmlType") {
     val types = CodeForNode.asTypes(xml)("beta")
   }

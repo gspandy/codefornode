@@ -101,18 +101,14 @@ object CodeForNode {
   /** get the attributes as a map of attribute names to their primitive type */
   def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => Primitive(str))
   
-  
   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
     var typesByName : Map[String, XmlType] = Map.empty
 
     val nodesMap = nodesByName(xml)
     
-    def newType(n : Node) = new Type(name(n), typeLookup = typesByName.apply _)
+    def newType(n : Node) : XmlType = new Type(name(n), typeLookup = typesByName.apply _)
 
-    def mergeXml(xml : Seq[Node]) : XmlType = {
-      val first : XmlType = newType(xml.head)
-      (first /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
-    }
+    def mergeXml(xml : Seq[Node]) : XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
 
     typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
     typesByName
