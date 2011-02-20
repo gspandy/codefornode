@@ -56,14 +56,9 @@ trait XmlType {
   def merge(other : XmlType) = {
       assert(other.name == name)
       
-      def mergeFields(fields : Seq[XmlField]) : XmlField = {
-          fields match {
-              case head :: Nil => head
-              case head :: tail => {
-                  println(" MERGING %s WITH %s".format(head, tail.head))
-                  (head /: tail){ (merged, field) => merged.merge(field) }
-              }
-          }
+      def mergeFields(fields : Seq[XmlField]) : XmlField = fields match {
+        case head :: Nil => head
+        case head :: tail => (head /: tail){ (merged, field) => merged.merge(field) }
       }
       
       val allAtts = attributes ++ other.attributes
