@@ -5,6 +5,8 @@ import scala.collection._
 object Cardinality extends Enumeration {
   type Cardinality = Value
   val OneToOne, OneToMany = Value
+  
+  def mergeCardinality(a : Cardinality, b : Cardinality) = if (a == OneToMany || b == OneToMany) { OneToMany } else { OneToOne }
 } 
 import Cardinality._
 
@@ -22,6 +24,13 @@ trait XmlField {
   
   lazy val cardString = if (cardinality == OneToOne) "1" else "*"
   override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)   
+  
+  def merge(other : XmlField) = {
+    assert(name == other.name)
+    assert(fieldType.name == other.fieldType.name)
+    val c = mergeCardinality(cardinality, other.cardinality)
+    XmlField(name, fieldType, c)
+  }
 }
 object XmlField {
     case class Field(override val name:String, override val fieldType:XmlType, override val cardinality : Cardinality) extends XmlField
@@ -46,9 +55,23 @@ trait XmlType {
   
   def merge(other : XmlType) = {
       assert(other.name == name)
+      
+      def mergeFields(fields : Seq[XmlField]) : XmlField = {
+          fields match {
+              case head :: Nil => head
+              case head :: tail => {
+                  println(" MERGING %s WITH %s".format(head, tail.head))
+                  (head /: tail){ (merged, field) => merged.merge(field) }
+              }
+          }
+      }
+      
       val allAtts = attributes ++ other.attributes
       val allFields = fields ++ other.fields
-      val merged = new XmlTypeImpl(name, allAtts, allFields)
+      val fieldsByName = allFields.groupBy(_.name)
+      val mergedFields = fieldsByName.map{ case (name, fields) => mergeFields(fields) }
+      
+      val merged = new XmlTypeImpl(name, allAtts, mergedFields.toSeq)
       merged
   }
 }
@@ -150,6 +173,6 @@ object CodeForNode {
     // we have to do a first pass to ensure all the types are populated
     typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
     typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
-    typesByName
+    typesByName filterNot { case (k, v) => v.isEmpty }
   }
 }
