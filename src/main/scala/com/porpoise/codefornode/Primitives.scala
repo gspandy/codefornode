@@ -9,6 +9,7 @@ trait Primitive { self =>
       case _ => STRING
     } 
   }
+  override def toString = getClass.getSimpleName.replace("$","")
 }
 object Primitive {
   implicit def apply(str : String) = {

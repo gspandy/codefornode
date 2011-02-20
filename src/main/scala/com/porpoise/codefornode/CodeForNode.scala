@@ -24,9 +24,7 @@ trait XmlField {
   override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)   
 }
 object XmlField {
-    
     case class Field(override val name:String, override val fieldType:XmlType, override val cardinality : Cardinality) extends XmlField
-    
     def apply(name : String, xmlType : XmlType, cardinality : Cardinality = OneToOne) = Field(name, xmlType, cardinality)
 }
 
@@ -108,7 +106,7 @@ object CodeForNode {
   }
 
   /** get the attributes as a map of attribute names to their primitive type */
-  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => XmlAttribute(str, Primitive(str)))
+  def attributes(xml : Node) = xml.attributes.asAttrMap.map{ case (name, value) => name -> XmlAttribute(name, Primitive(value)) }
 
   /** try and convert all the given nodes to a primitive type*/
   def asPrimitiveOption(nodes : Seq[Node]) : Option[Primitive] = {
@@ -149,6 +147,8 @@ object CodeForNode {
 
     def mergeXml(xml : Seq[Node]) : XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
 
+    // we have to do a first pass to ensure all the types are populated
+    typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
     typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
     typesByName
   }
