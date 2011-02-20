@@ -98,7 +98,7 @@ object CodeForNode {
   }
 
   /** get the attributes as a map of attribute names to their primitive type */
-  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => Primitive(str))
+  def attributes(xml : Node) = xml.attributes.asAttrMap.mapValues(str => XmlAttribute(str, Primitive(str)))
   
   def singlesAndMultiples[A](elements : Seq[A]) = {
         val sAndM = elements partition (n => elements.count( _ == n) == 1)
@@ -106,8 +106,8 @@ object CodeForNode {
   }
   
   /** try and convert all the given nodes to a primitive type*/
-  def asPrimitiveOption(nodes : Seq[Elem]) : Option[Primitive] = {
-      def primOpt(e : Elem) = {
+  def asPrimitiveOption(nodes : Seq[Node]) : Option[Primitive] = {
+      def primOpt(e : Node) = {
           if (elemChildren(e).size == 0 && e.attributes.isEmpty) {
               Some(Primitive(e.text))
           } else {
@@ -129,20 +129,17 @@ object CodeForNode {
     val nodesMap = nodesByName(xml)
     
     def newType(n : Node) : XmlType = {
-        var attributes : Map[String, XmlAttribute] = Map.empty
-
-        // 1) get a map of all child element names and cardinality        
-        var fieldNames : Map[String, Cardinality] = {
-          val allFieldNames = elemChildren(n) map (_.label)
-          val (s, m) = singlesAndMultiples(allFieldNames)
-          ((s map (_ -> OneToOne)) toMap) ++ ((m map (_ -> OneToMany)) toMap)
+        var atts : Map[String, XmlAttribute] = attributes(n)
+        var fieldNames : Map[String, Cardinality] = Map.empty
+        val kidsByName = elemChildren(n) groupBy (_.label)        
+        for ((name, childNodes) <- kidsByName) {
+            val cardinality = if (childNodes.size == 1) { OneToOne } else { OneToMany }
+            asPrimitiveOption(childNodes) match {
+                case Some(primitiveType : Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
+                case None => fieldNames = fieldNames + (name -> cardinality)
+            }
         }
-        
-        // 2) for each child which can be a simple attribute (e.g. <someDate>2011-10-01</someDate>), add that to the attributes list
-        //val elementAttributes = fieldNames map { asPrimitiveOption(_) }
-        // 3) for each child which cannot, add that to the field name list
-        
-        new Type(name(n), attributes, fieldNames, typeLookup = typesByName.apply _)
+        new Type(name(n), atts, fieldNames, typeLookup = typesByName.apply _)
     }
 
     def mergeXml(xml : Seq[Node]) : XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
