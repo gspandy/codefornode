@@ -49,8 +49,8 @@ trait XmlType {
   def merge(other : XmlType) = other
 }
 
-class Type(name : String = "", fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
-  lazy override val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
+class Type(override val name : String = "", fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
+  lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
   lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
 }
 
@@ -103,23 +103,18 @@ object CodeForNode {
   
   
   def asTypes(xml : NodeSeq) : Map[String, XmlType] = {
-    class Types {
-      var typesByName : Map[String, XmlType] = Map.empty
-      def addAll(types : Map[String, XmlType]) = typesByName = typesByName ++ types 
-      def get(name : String) = typesByName(name)
-    }
+    var typesByName : Map[String, XmlType] = Map.empty
+
     val nodesMap = nodesByName(xml)
     
-    val types = new Types()
-    
-    implicit def newType(n : Node) = new Type(name(n), typeLookup = types.get _)
+    def newType(n : Node) = new Type(name(n), typeLookup = typesByName.apply _)
 
     def mergeXml(xml : Seq[Node]) : XmlType = {
-      val first : XmlType = xml.head
-      (first /: xml) { (xmlType, node) => xmlType.merge(node) } 
+      val first : XmlType = newType(xml.head)
+      (first /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
     }
 
-    types.addAll(nodesMap.mapValues(mergeXml _))
-    types.typesByName
+    typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
+    typesByName
   }
 }
