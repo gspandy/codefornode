@@ -23,10 +23,10 @@ object XmlToModel {
 			      }
 			      newField.setAnnotations(a)
 			      att.attType match {
-			        case x : INT => newField.setType(Types.lng()) 
-			        case x : DEC => newField.setType(Types.decimal()) 
-			        case x : DATE => newField.setType(Types.date()) 
-			        case x : BOOL => newField.setType(Types.bool()) 
+			        case INT => newField.setType(Types.lng()) 
+			        case DEC => newField.setType(Types.decimal()) 
+			        case DATE => newField.setType(Types.date()) 
+			        case BOOL => newField.setType(Types.bool()) 
 			        case _ => newField.setType(Types.string()) 
 			      }
 			  }
