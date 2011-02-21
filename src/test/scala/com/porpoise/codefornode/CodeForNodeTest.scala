@@ -30,10 +30,19 @@ class CodeForNodeTest extends FunSuite {
        </alpha>
     </root>
 
-
-  test("asTypes can convert xml into XmlType representation") {
-    val typesByName = CodeForNode.asTypes(xml)
+  test("an xml element can be converted to an XmlType") {
+    val types = CodeForNode.asTypes(xml)
+    
+//    val names = types("root").allSubtypeNames
+//    println(names)
+    for (t <- types.values) {
+        println("=" * 80)
+        println(t)
+        println("=" * 80)
+    }
+    
   }
+
   
   test("elemChildren returns a list of element xml child nodes") {
     val kids = CodeForNode.elemChildren((xml \\ "beta").toList.last)
@@ -69,19 +78,6 @@ class CodeForNodeTest extends FunSuite {
       assertFalse(CodeForNode.asPrimitiveOption(List(decXmlA, decXmlC)).isDefined)
       assertFalse(CodeForNode.asPrimitiveOption(List(dateXmlA, dateXmlB)).isDefined)
       assertFalse(CodeForNode.asPrimitiveOption(List(dateXmlA, dateXmlC)).isDefined)
-  }
-  
-  test("an xml element can be converted to an XmlType") {
-    val types = CodeForNode.asTypes(xml)
-    
-//    val names = types("root").allSubtypeNames
-//    println(names)
-    for (t <- types.values) {
-        println("=" * 80)
-        println(t)
-        println("=" * 80)
-    }
-    
   }
   
   test("nodesByName returns a map of all xml elements by their element name") {

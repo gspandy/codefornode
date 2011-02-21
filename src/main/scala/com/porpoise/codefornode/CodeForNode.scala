@@ -37,7 +37,9 @@ object XmlField {
     def apply(name : String, xmlType : XmlType, cardinality : Cardinality = OneToOne) = Field(name, xmlType, cardinality)
 }
 
-case class XmlAttribute(name : String, attType : Primitive, annotationType : AnnotationType = ATTRIBUTE)
+case class XmlAttribute(name : String, attType : Primitive, annotationType : AnnotationType = ATTRIBUTE) {
+  override def toString = "%s:%s[%s]".format(name, attType, annotationType)
+}
 
 trait XmlType {
   def name : String
@@ -53,10 +55,16 @@ trait XmlType {
   lazy val allSubtypeNames = allSubtypes.map(_.name)
   lazy val complexFieldNames = fields.map(_.toString)
   
-  def merge(other : XmlType) = {
+  override def toString = {
+    "XmlType %s : %s%n\t%s".format(name, attributes.values, fields.mkString(",%n\t".format()))
+  }
+  
+  def merge(other : XmlType) : XmlType
+  
+  def merge2(other : XmlType) : XmlType = {
       assert(other.name == name)
       
-      def mergeFields(fields : Seq[XmlField]) : XmlField = fields match {
+      def flattenFields(fields : Seq[XmlField]) : XmlField = fields match {
         case head :: Nil => head
         case head :: tail => (head /: tail){ (merged, field) => merged.merge(field) }
       }
@@ -64,7 +72,7 @@ trait XmlType {
       val allAtts = attributes ++ other.attributes
       val allFields = fields ++ other.fields
       val fieldsByName = allFields.groupBy(_.name)
-      val mergedFields = fieldsByName.map{ case (name, fields) => mergeFields(fields) }
+      val mergedFields = fieldsByName.map{ case (name, fields) => flattenFields(fields) }
       
       val merged = new XmlTypeImpl(name, allAtts, mergedFields.toSeq)
       merged
@@ -74,7 +82,9 @@ private[codefornode] case class XmlTypeImpl(
     override val name : String,
     override val attributes : Map[String, XmlAttribute],
     override val fields : Seq[XmlField]
-    ) extends XmlType
+    ) extends XmlType {
+    override def merge(other : XmlType) = merge2(other)
+}
 
 object Maps {
   // stolen from http://stackoverflow.com/questions/1262741/scala-how-to-merge-a-collection-of-maps
@@ -88,9 +98,38 @@ object Maps {
 /** */
 object CodeForNode {
 
-  class Type(override val name : String = "", override val attributes : Map[String, XmlAttribute],fieldNames : Map[String, Cardinality] = Map.empty, typeLookup : String => XmlType) extends XmlType {
-    lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
-    lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
+  class Type(
+    override val name : String = "", 
+    override val attributes : Map[String, XmlAttribute],
+    val fieldNames : Map[String, Cardinality] = Map.empty, 
+    typeLookup : String => XmlType) extends XmlType {
+      lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
+      lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
+
+	  override def merge(other : XmlType) = {
+	      assert(other.name == name)
+	      
+	      val allAtts = attributes ++ other.attributes
+	      val allFieldNames = other match {
+	         case t : Type => Maps.mergeMaps(fieldNames, t.fieldNames) { (first, second) =>
+	           Cardinality.mergeCardinality(first, second)
+	         
+	         
+/*
+	         case other : XmlType => {
+               val fieldsByName = allFields.groupBy(_.name)
+               fieldsByName mapValues (fields
+               
+	         }
+*/
+	         
+	         
+	         } 
+	      }
+	      
+	      val merged = new Type(name, allAtts, allFieldNames, typeLookup)
+	      merged
+	  }
   }
 
   def apply(xml : NodeSeq) = {
