@@ -48,10 +48,12 @@ trait XmlType {
   lazy val allAttributes = attributes.values
   
   def field(name : String) = fields.find(_.name == name).get
-  lazy val types = fields.map(f => f.fieldType)
-  lazy val isEmpty = allAttributes.isEmpty && fields.isEmpty 
-  lazy val allSubtypes : Seq[XmlType] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
-  lazy val uniqueSubtypes = allSubtypes.toSet
+  def types = {
+    fields.map(f => f.fieldType)
+  }
+  def isEmpty = allAttributes.isEmpty && fields.isEmpty 
+  def allSubtypes : Seq[XmlType] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
+  //lazy val uniqueSubtypes = allSubtypes.toSet
   lazy val allSubtypeNames = allSubtypes.map(_.name)
   lazy val complexFieldNames = fields.map(_.toString)
   
@@ -81,7 +83,7 @@ object CodeForNode {
     typeLookup : String => XmlType) extends XmlType {
       lazy val fieldsByName : Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
       lazy override val fields : Seq[XmlField] = fieldsByName.values.toSeq
-
+      override def isEmpty = attributes.isEmpty && fieldNames.isEmpty
 	  override def merge(other : XmlType) = {
 	      assert(other.name == name)
 	      
@@ -164,6 +166,11 @@ object CodeForNode {
 
     val nodesMap = nodesByName(xml)
     
+    val doLookup : String => XmlType = (key : String) => {
+          //println("%nLOOKING UP %s in %s%n".format(key, typesByName.keySet.mkString(",")))
+          typesByName.apply(key)
+    }
+    
     def newType(n : Node) : XmlType = {
         var atts : Map[String, XmlAttribute] = attributes(n)
         var fieldNames : Map[String, Cardinality] = Map.empty
@@ -175,16 +182,15 @@ object CodeForNode {
                 case None => fieldNames = fieldNames + (name -> cardinality)
             }
         }
-        new Type(name(n), atts, fieldNames, typeLookup = typesByName.apply _)
+        new Type(name(n), atts, fieldNames, typeLookup = doLookup)
     }
 
     def mergeXml(xml : Seq[Node]) : XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) } 
 
     // we have to do a first pass to ensure all the types are populated
-    typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
+    //typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
     typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
-    //typesByName filterNot { case (k, v) => v.isEmpty }
-    println(typesByName)
+    typesByName filterNot { case (k, v) => v.isEmpty }
     typesByName
   }
 }

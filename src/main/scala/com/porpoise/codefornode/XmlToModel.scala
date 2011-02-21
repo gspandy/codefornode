@@ -22,7 +22,13 @@ object XmlToModel {
 			          case ELEMENT => "@XmlElement"
 			      }
 			      newField.setAnnotations(a)
-			      
+			      att.attType match {
+			        case x : INT => newField.setType(Types.lng()) 
+			        case x : DEC => newField.setType(Types.decimal()) 
+			        case x : DATE => newField.setType(Types.date()) 
+			        case x : BOOL => newField.setType(Types.bool()) 
+			        case _ => newField.setType(Types.string()) 
+			      }
 			  }
 			  for (f <- newType.fields) {
 			    val newField = newDef.addField(f.name)

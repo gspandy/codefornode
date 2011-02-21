@@ -20,7 +20,6 @@ class CodeForNodeTest extends FunSuite {
             <items name="here I appear a couple times" />
             <items name="see? I told you!" />
             <dave>
-               <alpha hello="again" />
                <creationDate>2011-12-12</creationDate>
                <someNumber>4</someNumber>
             </dave>
@@ -92,7 +91,7 @@ class CodeForNodeTest extends FunSuite {
     assertEquals(1, nodesByName("root").size)    
     assertEquals(2, nodesByName("beta").size)    
     assertEquals(1, nodesByName("dave").size)    
-    assertEquals(2, nodesByName("alpha").size)
+    assertEquals(1, nodesByName("alpha").size)
   }
 
 }
