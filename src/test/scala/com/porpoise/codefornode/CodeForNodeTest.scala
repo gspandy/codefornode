@@ -37,7 +37,7 @@ class CodeForNodeTest extends FunSuite {
 //    println(names)
     for (t <- types.values) {
         println("=" * 80)
-        println(t)
+        println(t.allSubtypes)
         println("=" * 80)
     }
     

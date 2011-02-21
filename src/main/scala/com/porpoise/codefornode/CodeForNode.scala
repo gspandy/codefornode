@@ -56,34 +56,10 @@ trait XmlType {
   lazy val complexFieldNames = fields.map(_.toString)
   
   override def toString = {
-    "XmlType %s : %s%n\t%s".format(name, attributes.values, fields.mkString(",%n\t".format()))
+    "XmlType %s : %s%n\tFields:%n\t%s".format(name, attributes.values, fields.mkString(",%n\t".format()))
   }
   
   def merge(other : XmlType) : XmlType
-  
-  def merge2(other : XmlType) : XmlType = {
-      assert(other.name == name)
-      
-      def flattenFields(fields : Seq[XmlField]) : XmlField = fields match {
-        case head :: Nil => head
-        case head :: tail => (head /: tail){ (merged, field) => merged.merge(field) }
-      }
-      
-      val allAtts = attributes ++ other.attributes
-      val allFields = fields ++ other.fields
-      val fieldsByName = allFields.groupBy(_.name)
-      val mergedFields = fieldsByName.map{ case (name, fields) => flattenFields(fields) }
-      
-      val merged = new XmlTypeImpl(name, allAtts, mergedFields.toSeq)
-      merged
-  }
-}
-private[codefornode] case class XmlTypeImpl(
-    override val name : String,
-    override val attributes : Map[String, XmlAttribute],
-    override val fields : Seq[XmlField]
-    ) extends XmlType {
-    override def merge(other : XmlType) = merge2(other)
 }
 
 object Maps {
@@ -207,6 +183,8 @@ object CodeForNode {
     // we have to do a first pass to ensure all the types are populated
     typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
     typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
-    typesByName filterNot { case (k, v) => v.isEmpty }
+    //typesByName filterNot { case (k, v) => v.isEmpty }
+    println(typesByName)
+    typesByName
   }
 }
