@@ -34,6 +34,16 @@ class XPathsTest extends FunSuite {
        </alpha>
     </root>
 
+
+  test("xpaths can return a mapping of xpaths to their values") {
+      val xpathsWithValues = XPaths.listXPathsWithValues(xml)
+      println(xpathsWithValues.mkString("%n".format()))
+      val byXPath = xpathsWithValues.toMap
+      assertEquals(byXPath("root/alpha[2]/@some"), "property")
+      assertEquals(byXPath("root/alpha[2]/beta[2]/booleanField[1]"), "false")
+      assertEquals(byXPath("root/alpha[2]/beta[2]/items[2]/@name"), "see? I told you!")
+  }
+      
   test("xpaths returns a list of all xpaths and values") {
     val xpaths = XPaths(xml)
 

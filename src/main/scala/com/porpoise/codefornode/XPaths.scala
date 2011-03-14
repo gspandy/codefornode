@@ -8,10 +8,22 @@ import scala.collection._
  */
 object XPaths {
 
+  def apply(xml : Elem) : List[String] = listXPaths(xml)
+  
+  /** create a list of all xpaths paired with their values */
+  def listXPathsWithValues(xml : Elem) : List[(String, String)] = {
+      import javax.xml.xpath._
+      val xmlStr = xml.toString()
+      val factory = XPathFactory.newInstance().newXPath()
+      
+      //TODO - very inefficient!
+      def src = new org.xml.sax.InputSource(new java.io.StringReader(xmlStr)) 
+      listXPaths(xml : Elem).map(xpath => xpath -> factory.compile(xpath).evaluate(src) )
+  }
   /**
    * @return a list of xpath strings
    */
-  def apply(xml : Elem) : List[String] = {
+  def listXPaths(xml : Elem) : List[String] = {
 
    /** get the element children of a node */
    def kids(elm : Elem) : List[Elem] = elm.child.toList.filter(e => e match {
