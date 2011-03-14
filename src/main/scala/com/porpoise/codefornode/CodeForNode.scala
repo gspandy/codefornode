@@ -10,6 +10,7 @@ object Cardinality extends Enumeration {
 } 
 import Cardinality._
 
+/** properties can be represented either via xml attribuses or elements in their own right */
 object AnnotationType extends Enumeration {
   type AnnotationType = Value
   val ATTRIBUTE, ELEMENT = Value
@@ -17,6 +18,7 @@ object AnnotationType extends Enumeration {
 import AnnotationType._
 import Cardinality._
 
+/** An 'XmlField' represents a property of an XmlType */
 trait XmlField {
   def name : String
   def fieldType : XmlType
@@ -32,6 +34,7 @@ trait XmlField {
     XmlField(name, fieldType, c)
   }
 }
+/** Companion object for XmlFields */
 object XmlField {
     case class Field(override val name:String, override val fieldType:XmlType, override val cardinality : Cardinality) extends XmlField
     def apply(name : String, xmlType : XmlType, cardinality : Cardinality = OneToOne) = Field(name, xmlType, cardinality)
@@ -40,7 +43,7 @@ object XmlField {
 case class XmlAttribute(name : String, attType : Primitive, annotationType : AnnotationType = ATTRIBUTE) {
   override def toString = "%s:%s[%s]".format(name, attType, annotationType)
 }
-
+/** Within some XML, its xml elements are represented by XmlTypes */
 trait XmlType {
   def name : String
   def attributes : Map[String, XmlAttribute] = Map.empty
@@ -73,7 +76,7 @@ object Maps {
   }
 }
 
-/** */
+/** Entry point for this utility. */
 object CodeForNode {
 
   class Type(
@@ -91,17 +94,6 @@ object CodeForNode {
 	      val allFieldNames = other match {
 	         case t : Type => Maps.mergeMaps(fieldNames, t.fieldNames) { (first, second) =>
 	           Cardinality.mergeCardinality(first, second)
-	         
-	         
-/*
-	         case other : XmlType => {
-               val fieldsByName = allFields.groupBy(_.name)
-               fieldsByName mapValues (fields
-               
-	         }
-*/
-	         
-	         
 	         } 
 	      }
 	      
