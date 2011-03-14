@@ -32,19 +32,29 @@ class XPathsTest extends FunSuite {
   test("xpaths returns a list of all xpaths and values") {
     val xpaths = XPaths(xml)
 
-    val expected = """root/age
-                     |root/name
-                     |root/alpha[0]/some
-                     |root/alpha[0]/beta[0]/occurrence
-                     |root/alpha[0]/beta[0]/items[3]/name
+    val expected = """root/@age
+                     |root/@name
+                     |root/alpha[0]/@some
+                     |root/alpha[0]/beta[0]/@occurrence
+                     |root/alpha[0]/beta[0]/amount[0]/amount
+                     |root/alpha[0]/beta[0]/various[1]/various
+                     |root/alpha[0]/beta[0]/booleanField[2]/booleanField
+                     |root/alpha[0]/beta[0]/items[3]/items
+                     |root/alpha[0]/beta[0]/items[3]/@name
                      |root/alpha[0]/beta[1]/@second
-                     |root/alpha[0]/beta[1]/amount
-                     |root/alpha[0]/beta[1]/items[1]/name
-                     |root/alpha[0]/beta[1]/items[2]/name""".stripMargin
+                     |root/alpha[0]/beta[1]/amount[1]/amount
+                     |root/alpha[0]/beta[1]/items[1]/items
+                     |root/alpha[0]/beta[1]/items[1]/@name
+                     |root/alpha[0]/beta[1]/items[2]/items
+                     |root/alpha[0]/beta[1]/items[2]/@name
+                     |root/alpha[0]/beta[1]/dave[1]/creationDate[0]/creationDate
+                     |root/alpha[0]/beta[1]/dave[1]/someNumber[1]/someNumber
+                     |root/alpha[0]/beta[1]/various[1]/various
+                     |root/alpha[0]/beta[1]/booleanField[1]/booleanField""".stripMargin
      val xpathString = xpaths.mkString("%n".format())
 
      println(xpathString)
      assertEquals(expected, xpathString)
   }
-  
+
 }
