@@ -1,0 +1,23 @@
+== CodeForNode ==
+
+This project serves as a little playground for some xml fun.
+
+It takes an arbitrary XML document and coverts it to the form supported by the jet-generator project.
+Though there are many other (better) means of generating code from a schema, this works well for rapid-prototyping
+xml w/o a schema.
+
+Also, there is an XPaths utility which can list all xpaths for a given xml document
+
+Without any params, it launches a UI which allows the user to chose an xml file and destination directory.
+
+
+= Dependencies =
+This project depends on codefornode-ui 
+
+https://github.com/aaronp/codefornode-ui
+
+and the jet-generator
+
+https://github.com/aaronp/jet-generator
+
+Currently I've been building and manually copying those dependencies to the 'lib' folder -- I spent minimal time asking sbt to resolve them for me, but somehow it didn't want to play nicely.

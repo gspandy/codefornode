@@ -3,8 +3,7 @@ import sbt._
 import reaktor.scct.ScctProject
 
 class Project(info: ProjectInfo) extends DefaultProject(info) with ScctProject {
-  self =>
-  this
+  self => this
 
   lazy val m2repo = DefaultMavenRepository
 
@@ -20,5 +19,9 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with ScctProject {
 
   val junit = "junit" % "junit" % "4.8.2" % "test"
   val scalatest = "org.scalatest" % "scalatest" % "1.2" % "test"
+  val ui =  <dependency><groupId>com.porpoise</groupId>
+  <artifactId>codefornode-ui</artifactId>
+  <version>0.0.1-SNAPSHOT</version></dependency>
+
   //val gen = "com.porpoise" % "gen" % "1.0.0-SNAPSHOT"
 }
