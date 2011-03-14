@@ -8,8 +8,9 @@ import org.junit.Assert._
 @RunWith(classOf[JUnitRunner])
 class XPathsTest extends FunSuite {
     val xml = <root age="123" name="dave">
+       <alpha />
        <alpha some="property">
-         <beta occurrence="1">
+         <beta occurrence="1" another="property">
             <amount>0.03</amount>
             <various>17</various>
             <booleanField>true</booleanField>
@@ -24,7 +25,11 @@ class XPathsTest extends FunSuite {
                <someNumber>4</someNumber>
             </dave>
             <various>here I'm some text</various>
+            <various>another various element</various>
             <booleanField>false</booleanField>
+            <dave>
+               <someNumber>4</someNumber>
+            </dave>
          </beta>
        </alpha>
     </root>
@@ -34,29 +39,30 @@ class XPathsTest extends FunSuite {
 
     val expected = """root/@age
                      |root/@name
-                     |root/alpha[0]/@some
-                     |root/alpha[0]/beta[0]/@occurrence
-                     |root/alpha[0]/beta[0]/amount[0]/amount
-                     |root/alpha[0]/beta[0]/various[1]/various
-                     |root/alpha[0]/beta[0]/booleanField[2]/booleanField
-                     |root/alpha[0]/beta[0]/items[3]/items
-                     |root/alpha[0]/beta[0]/items[3]/@name
-                     |root/alpha[0]/beta[1]/@second
-                     |root/alpha[0]/beta[1]/amount[1]/amount
-                     |root/alpha[0]/beta[1]/items[1]/items
-                     |root/alpha[0]/beta[1]/items[1]/@name
-                     |root/alpha[0]/beta[1]/items[2]/items
-                     |root/alpha[0]/beta[1]/items[2]/@name
-                     |root/alpha[0]/beta[1]/dave[1]/creationDate[0]/creationDate
-                     |root/alpha[0]/beta[1]/dave[1]/someNumber[1]/someNumber
-                     |root/alpha[0]/beta[1]/various[1]/various
-                     |root/alpha[0]/beta[1]/booleanField[1]/booleanField""".stripMargin
+                     |root/alpha[1]
+                     |root/alpha[2]/@some
+                     |root/alpha[2]/beta[1]/@occurrence
+                     |root/alpha[2]/beta[1]/@another
+                     |root/alpha[2]/beta[1]/amount[1]
+                     |root/alpha[2]/beta[1]/items[1]
+                     |root/alpha[2]/beta[1]/items[1]/@name
+                     |root/alpha[2]/beta[1]/booleanField[1]
+                     |root/alpha[2]/beta[1]/various[1]
+                     |root/alpha[2]/beta[2]/@second
+                     |root/alpha[2]/beta[2]/dave[1]/creationDate[1]
+                     |root/alpha[2]/beta[2]/dave[1]/someNumber[1]
+                     |root/alpha[2]/beta[2]/dave[2]/someNumber[1]
+                     |root/alpha[2]/beta[2]/booleanField[1]
+                     |root/alpha[2]/beta[2]/items[1]
+                     |root/alpha[2]/beta[2]/items[1]/@name
+                     |root/alpha[2]/beta[2]/items[2]
+                     |root/alpha[2]/beta[2]/items[2]/@name
+                     |root/alpha[2]/beta[2]/amount[1]
+                     |root/alpha[2]/beta[2]/various[1]
+                     |root/alpha[2]/beta[2]/various[2]""".stripMargin
      val xpathString = xpaths.mkString("%n".format())
 
-     println("====================")
-     println(xpathString)
-     println("====================")
-     //assertEquals(expected, xpathString)
+     assertEquals(expected, xpathString)
   }
 
 }

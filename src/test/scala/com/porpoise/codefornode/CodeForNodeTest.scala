@@ -32,12 +32,10 @@ class CodeForNodeTest extends FunSuite {
   test("an xml element can be converted to an XmlType") {
     val types = CodeForNode.asTypes(xml)
     
-//    val names = types("root").allSubtypeNames
-//    println(names)
     for (t <- types.values) {
-        println("=" * 80)
+        println("=_" * 80)
         println(t.allSubtypes)
-        println("=" * 80)
+        println("_=" * 80)
     }
     
   }

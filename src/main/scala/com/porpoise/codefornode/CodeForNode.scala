@@ -158,10 +158,7 @@ object CodeForNode {
 
     val nodesMap = nodesByName(xml)
     
-    val doLookup : String => XmlType = (key : String) => {
-          //println("%nLOOKING UP %s in %s%n".format(key, typesByName.keySet.mkString(",")))
-          typesByName.apply(key)
-    }
+    val doLookup : String => XmlType = (key : String) => typesByName.apply(key)
     
     def newType(n : Node) : XmlType = {
         var atts : Map[String, XmlAttribute] = attributes(n)

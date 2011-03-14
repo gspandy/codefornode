@@ -3,7 +3,6 @@ import java.util.Date
 
 trait Primitive { self =>
   def merge(other : Primitive) : Primitive = {
-    println("super.merge comparing %s and %s".format(other.getClass.getSimpleName,self.getClass.getSimpleName))
     other match {
       case _ if (other.getClass.getSimpleName == self.getClass.getSimpleName) => other
       case _ => STRING
@@ -24,7 +23,6 @@ object Primitive {
 }
 object INT extends Primitive {
   override def merge(other : Primitive) : Primitive = {
-    println("int merging with " + other)
     other match {
       case DEC => DEC
       case _ => super.merge(other)

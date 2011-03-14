@@ -40,8 +40,6 @@ object XmlToModel {
 			      newField.setCollectionType(CollectionType.LIST)
 			    }
 			  }
-		    } else {
-		      println("%s is empty... ignoring".format(newType.name))
 		    }
         }
 	    
