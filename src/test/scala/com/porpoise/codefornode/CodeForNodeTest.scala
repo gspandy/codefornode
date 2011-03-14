@@ -41,7 +41,6 @@ class CodeForNodeTest extends FunSuite {
     }
     
   }
-
   
   test("elemChildren returns a list of element xml child nodes") {
     val kids = CodeForNode.elemChildren((xml \\ "beta").toList.last)
