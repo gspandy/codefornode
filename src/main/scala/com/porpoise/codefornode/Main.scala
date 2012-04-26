@@ -1,15 +1,14 @@
 package com.porpoise.codefornode
 
 import java.io.File
-
 import scala.xml.XML
-
 import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.porpoise.codefornode.ui.CodeForNodePanel
 import com.porpoise.codefornode.ui.TargetLanguage
 import com.porpoise.codefornode.ui.TargetLanguage._
 import com.porpoise.gen.beans.BeanGenerator
+import com.porpoise.gen.beans.ScalaGenerator
 
 object Main {
 
