@@ -33,13 +33,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="panelInputXml" alignment="1" max="32767" attributes="0"/>
                   <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="radioButtonScala" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="radioButtonJava" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="426" max="32767" attributes="0"/>
+                      <EmptySpace pref="446" max="32767" attributes="0"/>
                       <Component id="buttonGenerate" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -50,14 +49,24 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="textFieldDest" pref="416" max="32767" attributes="1"/>
+                              <Component id="textFieldDest" pref="436" max="32767" attributes="1"/>
                               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                               <Component id="buttonFind" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="textFieldPackage" alignment="0" pref="497" max="32767" attributes="0"/>
+                          <Component id="textFieldPackage" alignment="0" pref="517" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="panelInputXml" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="labelLogo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jPanel2" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -67,7 +76,10 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="labelLogo" min="-2" max="-2" attributes="1"/>
+                  <Component id="jPanel2" min="-2" max="-2" attributes="1"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="panelInputXml" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -109,6 +121,9 @@
     </Component>
     <Container class="javax.swing.JPanel" name="jPanel1">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" id="Window" palette="2" red="ff" type="palette"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Output"/>
@@ -119,7 +134,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jScrollPane1" alignment="0" pref="634" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" alignment="0" pref="654" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -190,6 +205,9 @@
     </Component>
     <Container class="javax.swing.JPanel" name="panelInputXml">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" id="window" palette="3" red="ff" type="palette"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Input XML"/>
@@ -204,12 +222,12 @@
                   <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="textFieldXml" pref="461" max="32767" attributes="1"/>
+                  <Component id="textFieldXml" pref="481" max="32767" attributes="1"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="buttonFindXml" min="-2" max="-2" attributes="1"/>
                   <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
               </Group>
-              <Component id="jScrollPane2" alignment="1" pref="634" max="32767" attributes="0"/>
+              <Component id="jScrollPane2" alignment="1" pref="654" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -263,12 +281,70 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="jLabel5">
+    <Component class="javax.swing.JLabel" name="labelLogo">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/porpoiseSmall.png"/>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" value="porpoiseltd.com"/>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPanel" name="jPanel2">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" id="Window" palette="2" red="ff" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace pref="184" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="labelVersion" alignment="1" min="-2" pref="122" max="-2" attributes="0"/>
+                      <Component id="labelTitle" alignment="1" min="-2" pref="233" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="labelTitle" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="labelVersion" min="-2" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="labelTitle">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Meiryo" size="13" style="0"/>
+            </Property>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="80" green="80" id="Inactive Caption Text" palette="2" red="80" type="palette"/>
+            </Property>
+            <Property name="horizontalAlignment" type="int" value="4"/>
+            <Property name="text" type="java.lang.String" value="code-for-node"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="labelVersion">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Meiryo" size="13" style="0"/>
+            </Property>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="80" green="80" id="Inactive Caption" palette="2" red="80" type="palette"/>
+            </Property>
+            <Property name="horizontalAlignment" type="int" value="4"/>
+            <Property name="text" type="java.lang.String" value="version"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>
