@@ -7,7 +7,7 @@ object Properties {
   val VersionMajor = 0
   val VersionBuild = 1
 
-  val VersionString = "%s.%s.%s".format(VersionMajor, VersionMinor, VersionBuild)
+  val VersionString = "v%s.%s.%s".format(VersionMajor, VersionMinor, VersionBuild)
 }
 
 object Cardinality extends Enumeration {

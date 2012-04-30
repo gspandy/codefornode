@@ -42,12 +42,18 @@ object Main {
       }
     }
 
-    if (args.length == 1)
-      XPaths.apply(XML.loadFile(args(0)))
-    else if (args.length > 1)
-      println("Usage: Main [xml file]%n\tEither open the code-for-node UI (with no args) or, if given the location of an xml file,%n\t print its xpaths to standard out".format())
+    if (args.length == 1) {
+      val xpaths = XPaths.apply(XML.loadFile(args(0)))
+      xpaths.foreach(println)
+    } else if (args.length > 1) {
+      println("""Usage: Main [xml file]%n
+                 |Either open the code-for-node UI (with no args) or, if given the location of an xml file,%n
+                 |print its xpaths to standard out""".stripMargin.format())
 
-    if (args.isEmpty)
-      CodeForNodePanel.showCodeForNode(Controller)
+    }
+
+    if (args.isEmpty) {
+      CodeForNodePanel.showCodeForNode(Controller, "CodeForNode", Properties.VersionString)
+    }
   }
 }
