@@ -9,22 +9,36 @@ import com.porpoise.codefornode.ui.TargetLanguage
 import com.porpoise.codefornode.ui.TargetLanguage._
 import com.porpoise.gen.beans.BeanGenerator
 import com.porpoise.gen.beans.ScalaGenerator
+import scala.xml.Node
 
 object Main {
 
   def main(args: Array[String]) = {
     object Controller extends CodeForNodePanel.Controller {
-      override def generate(xml: String, destDir: File, pckg: String, lang: TargetLanguage) = {
-        val inputXml = XML.loadString(xml)
-        val root = CodeForNode(inputXml)
-        val model = XmlToModel.typeToModel(pckg, root)
-        Files.write(model.toXml(), new File(destDir, "model.xml"), Charsets.UTF_8)
-        lang match {
-          case Java => BeanGenerator.generateMain(model, destDir)
-          case Scala => ScalaGenerator.generateMain(model, destDir)
-        }
 
-        "success"
+      private def generateXml(inputXml: Node, destDir: File, pckg: String, lang: TargetLanguage): String = {
+        try {
+          val root = CodeForNode(inputXml)
+          val model = XmlToModel.typeToModel(pckg, root)
+          Files.write(model.toXml(), new File(destDir, "model.xml"), Charsets.UTF_8)
+          lang match {
+            case Java => BeanGenerator.generateMain(model, destDir)
+            case Scala => ScalaGenerator.generateMain(model, destDir)
+          }
+
+          "Success: generated %s code under %s".format(lang, destDir.getPath)
+        } catch {
+          case e => "Error generating code: %s".format(e)
+        }
+      }
+
+      override def generate(xml: String, destDir: File, pckg: String, lang: TargetLanguage): String = {
+        try {
+          val inputXml = XML.loadString(xml)
+          generateXml(inputXml, destDir, pckg, lang)
+        } catch {
+          case e => "Invalid xml: %s".format(e.getMessage)
+        }
       }
     }
 

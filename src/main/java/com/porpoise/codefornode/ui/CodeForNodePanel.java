@@ -44,6 +44,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.initFromPrefs(this.textFieldDest, "");
         Swing.initFromPrefs(this.textFieldXml, "");
         Swing.initFromPrefs(this.textFieldPackage, "");
+        Swing.initFromPrefs(this.textAreaInputXml, "");
 
         final String language = Swing.getUserPreference("language", TargetLanguage.Scala.name());
 
@@ -123,13 +124,13 @@ public class CodeForNodePanel extends javax.swing.JPanel {
 
         this.jLabel2.setText("jLabel2");
 
-        setBackground(java.awt.SystemColor.window);
+        setBackground(java.awt.Color.white);
 
         this.jLabel1.setText("Destination Directory:");
 
         this.jLabel3.setText("Package Name:");
 
-        this.jPanel1.setBackground(java.awt.SystemColor.window);
+        this.jPanel1.setBackground(java.awt.Color.white);
         this.jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Output"));
 
         this.textAreaOutput.setColumns(20);
@@ -139,7 +140,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         final javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(this.jPanel1);
         this.jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(
-                this.jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE));
+                this.jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE));
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(
                 this.jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE));
 
@@ -231,10 +232,10 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                         javax.swing.GroupLayout.Alignment.TRAILING,
                         panelInputXmlLayout.createSequentialGroup().addGap(10, 10, 10).addComponent(this.jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(this.textFieldXml, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                                .addComponent(this.textFieldXml, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(this.buttonFindXml)
                                 .addGap(4, 4, 4))
-                .addComponent(this.jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 654,
+                .addComponent(this.jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 634,
                         Short.MAX_VALUE));
         panelInputXmlLayout.setVerticalGroup(panelInputXmlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
                 panelInputXmlLayout
@@ -251,7 +252,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         this.labelLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/porpoiseSmall.png"))); // NOI18N
         this.labelLogo.setToolTipText("porpoiseltd.com");
 
-        this.jPanel2.setBackground(java.awt.SystemColor.window);
+        this.jPanel2.setBackground(java.awt.Color.white);
 
         this.labelTitle.setFont(new java.awt.Font("Meiryo", 0, 13)); // NOI18N
         this.labelTitle.setForeground(java.awt.SystemColor.inactiveCaptionText);
@@ -269,7 +270,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                 javax.swing.GroupLayout.Alignment.TRAILING,
                 jPanel2Layout
                         .createSequentialGroup()
-                        .addContainerGap(184, Short.MAX_VALUE)
+                        .addContainerGap(164, Short.MAX_VALUE)
                         .addGroup(
                                 jPanel2Layout
                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -298,7 +299,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                                                                 .addComponent(this.radioButtonScala)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(this.radioButtonJava)
-                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446,
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 426,
                                                                         Short.MAX_VALUE).addComponent(this.buttonGenerate))
                                                 .addGroup(
                                                         javax.swing.GroupLayout.Alignment.TRAILING,
@@ -319,32 +320,20 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                                                                                                 .addComponent(
                                                                                                         this.textFieldDest,
                                                                                                         javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                                        436, Short.MAX_VALUE)
+                                                                                                        416, Short.MAX_VALUE)
                                                                                                 .addGap(6, 6, 6)
                                                                                                 .addComponent(this.buttonFind))
                                                                                 .addComponent(this.textFieldPackage,
-                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE, 517,
+                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE, 497,
                                                                                         Short.MAX_VALUE)))
+                                                .addComponent(this.panelInputXml, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addGroup(
                                                         layout.createSequentialGroup()
-                                                                .addGroup(
-                                                                        layout.createParallelGroup(
-                                                                                javax.swing.GroupLayout.Alignment.LEADING)
-                                                                                .addComponent(this.panelInputXml,
-                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                        Short.MAX_VALUE)
-                                                                                .addGroup(
-                                                                                        layout.createSequentialGroup()
-                                                                                                .addComponent(this.labelLogo)
-                                                                                                .addPreferredGap(
-                                                                                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                                                .addComponent(
-                                                                                                        this.jPanel2,
-                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                                        Short.MAX_VALUE)))
-                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                                                .addComponent(this.labelLogo)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(this.jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                 .addContainerGap()));
         layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
                 javax.swing.GroupLayout.Alignment.TRAILING,
@@ -459,6 +448,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.savePrefs(this.textFieldPackage);
         Swing.savePrefs(this.textFieldXml);
         Swing.savePrefs(this.textFieldDest);
+        Swing.savePrefs(this.textAreaInputXml);
         Swing.savePrefs("language", getTargetLanguage().name());
     }
 

@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.text.JTextComponent;
 
 import com.google.common.base.Strings;
 
@@ -112,11 +113,11 @@ public enum Swing {
         return evt.getKeyCode() == KeyEvent.VK_DELETE;
     }
 
-    public static void savePrefs(final JTextField target) {
+    public static void savePrefs(final JTextComponent target) {
         savePrefs(target, target.getText());
     }
 
-    public static void savePrefs(final JTextField target, final String path) {
+    public static void savePrefs(final Component target, final String path) {
         final String key = prefKeyForField(target);
         savePrefs(key, path);
     }
@@ -125,7 +126,7 @@ public enum Swing {
      * @param target
      * @return
      */
-    public static String prefKeyForField(final JTextField target) {
+    public static String prefKeyForField(final Component target) {
         String name = target.getName();
         if (name == null) {
             final Point point = target.getLocation();
@@ -153,7 +154,7 @@ public enum Swing {
         }
     }
 
-    public static JTextField initFromPrefs(final JTextField field, final String defaultValue) {
+    public static <C extends JTextComponent> C initFromPrefs(final C field, final String defaultValue) {
         final String key = prefKeyForField(field);
         field.setText(getUserPreference(key, defaultValue));
         return field;
