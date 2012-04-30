@@ -31,8 +31,6 @@ object XPaths {
   def xpathValues(xml: Elem)(xpaths: Set[String]) = {
     import javax.xml.xpath._
 
-    import com.porpoise.xpaths.Primitive;
-    import com.porpoise.xpaths.XmlAttribute;
     val factory = XPathFactory.newInstance().newXPath()
 
     //TODO - timings/memory profiling as this may be quite inefficient
@@ -144,10 +142,8 @@ object XPaths {
 
       // the xpaths are the attribute xpaths + this node (if we need to include it)
       val xpaths: Set[String] = if (includePrefix) {
-        println("we need to include " + prefixPath)
         attributeXPaths + prefixPath
       } else {
-        println("we don't need to include " + prefixPath)
         attributeXPaths
       }
       attributeXPaths ++ theRest ++ xpaths
