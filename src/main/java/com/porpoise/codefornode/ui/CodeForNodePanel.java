@@ -1,5 +1,6 @@
 package com.porpoise.codefornode.ui;
 
+import java.awt.Image;
 import java.io.File;
 import java.util.List;
 
@@ -65,11 +66,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                 return String.format("file=%s%ndest=%s%npckg=%s%nlang=%s", xml, destDir.getName(), pckg, language);
             }
         };
-<<<<<<< HEAD
-        showCodeForNode(c);
-=======
         showCodeForNode(c, "Code For Node", "panel demo");
->>>>>>> dev
     }
 
     /**
@@ -87,19 +84,15 @@ public class CodeForNodePanel extends javax.swing.JPanel {
     /**
      * @param c
      */
-<<<<<<< HEAD
-    public static void showCodeForNode(final Controller c) {
-        Swing.setDefaultTheme();
-        final CodeForNodePanel p = new CodeForNodePanel(c);
-        Swing.show("CodeForNode", p);
-=======
     public static void showCodeForNode(final Controller c, final String title, final String version) {
         Swing.setDefaultTheme();
+
+        // TODO
+        final Image icon = null;
         final CodeForNodePanel p = new CodeForNodePanel(c);
-        p.setVersion(version);
-        Swing.show(title, p);
->>>>>>> dev
         p.initFromPrefs();
+        p.setVersion(version);
+        Swing.show(title, p, icon);
     }
 
     /**
