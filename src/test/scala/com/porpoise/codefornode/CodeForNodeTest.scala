@@ -1,10 +1,10 @@
 package com.porpoise.codefornode
 
+import org.junit.Assert._
 import org.junit.runner.RunWith
 import org.junit.Assert
-import org.scalatest.Spec
 import org.scalatest.junit.JUnitRunner
-import Assert._
+import org.scalatest.Spec
 
 @RunWith(classOf[JUnitRunner])
 class CodeForNodeTest extends Spec {
@@ -32,25 +32,54 @@ class CodeForNodeTest extends Spec {
             </root>
 
   describe("CodeForNode.asTypes") {
-    def debugTypes(types: Map[String, XmlType]) = {
-      for (t <- types.values) {
-        println("=_" * 80)
-        println(t.allSubtypes)
-        println("_=" * 80)
-      }
-    }
 
     it("should convert string types to strings") {
-      val types = CodeForNode.asTypes(<foo title="asdf"/>)
-      debugTypes(types)
+      val foo = CodeForNode(<foo title="asdf"/>)
+      assert("foo" === foo.name)
+      val Seq(title) = foo.allAttributes.toSeq
+      assert("title" === title.name)
+      assert(STRING === title.attType)
+      assert(AnnotationType.ATTRIBUTE === title.annotationType)
     }
     it("should convert int types to ints") {
-      val types = CodeForNode.asTypes(<foo int="123"/>)
-      debugTypes(types)
+      val foo = CodeForNode(<foo int="123"/>)
+      val Seq(integer) = foo.allAttributes.toSeq
+      assert(INT === integer.attType)
     }
     it("should convert date types to dates") {
-      val types = CodeForNode.asTypes(<foo date="30.12.2012"/>)
-      debugTypes(types)
+      val foo = CodeForNode(<foo date="30.12.2012"/>)
+      val Seq(d8) = foo.allAttributes.toSeq
+      assert(DATE === d8.attType)
+    }
+    def assertBar(bar: XmlType) {
+      assert("bar" === bar.name)
+      assert("name" === bar.attributes("name").name)
+      assert(STRING === bar.attributes("name").attType)
+      assert(AnnotationType.ATTRIBUTE === bar.attributes("name").annotationType)
+
+      assert("age" === bar.attributes("age").name)
+      assert(INT === bar.attributes("age").attType)
+      assert(AnnotationType.ATTRIBUTE === bar.attributes("age").annotationType)
+
+    }
+    it("should combine type of the same name on the same level") {
+      val types = CodeForNode.asTypes(<foo title="some title"> <bar/><bar name="n" age="123"/></foo>)
+      val bar = types("bar")
+      assertBar(bar)
+    }
+    it("should combine type of the same name on nested levels with different fields declared on each") {
+      // elements of the same name on different levels should be considered the same 'type'
+      val types = CodeForNode.asTypes(<foo title="some title"> <bar name="n"/><nested><bar age="123"/></nested></foo>)
+      val bar = types("bar")
+      assertBar(bar)
+      assertBar(types("foo").field("bar").fieldType)
+    }
+    it("should combine type of the same name on nested levels") {
+      // elements of the same name on different levels should be considered the same 'type'
+      val types = CodeForNode.asTypes(<foo title="some title"> <bar/><nested><bar name="n" age="123"/></nested></foo>)
+      val bar = types("bar")
+      assertBar(bar)
+      assertBar(types("foo").field("bar").fieldType)
     }
   }
   describe("CodeForNode.elemChildren") {
@@ -79,7 +108,7 @@ class CodeForNodeTest extends Spec {
       val boolXmlC = <b ina="lid">true</b>
 
       assertEquals(STRING, CodeForNode.asPrimitiveOption(List(intXmlA, decXmlA, dateXmlA, boolXmlA)).get)
-      assertEquals(INT, CodeForNode.asPrimitiveOption(List(intXmlA, intXmlA)).get)
+      assertEquals(INT, CodeForNode.asPrimitiveOption(List(intXmlA, <integer>2</integer>)).get)
       assertEquals(DEC, CodeForNode.asPrimitiveOption(List(intXmlA, decXmlA)).get)
       assertEquals(BOOL, CodeForNode.asPrimitiveOption(List(boolXmlA, boolXmlA)).get)
 

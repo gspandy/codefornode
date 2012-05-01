@@ -55,9 +55,14 @@ trait XmlType {
   def name: String
   def attributes: Map[String, XmlAttribute] = Map.empty
   def fields: Seq[XmlField]
-  lazy val allAttributes = attributes.values
 
-  def field(name: String) = fields.find(_.name == name).get
+  lazy val allAttributes: Iterable[XmlAttribute] = attributes.values
+
+  def field(name: String) = fieldOpt(name).getOrElse {
+    val err = "field '%s' not found. Fields are: %s".format(name, fields.map(_.name).mkString("[", ",", "]"))
+    throw new IllegalArgumentException(err)
+  }
+  def fieldOpt(name: String) = fields.find(_.name == name)
   def types = fields.map(f => f.fieldType)
   def isEmpty = allAttributes.isEmpty && fields.isEmpty
   def allSubtypes: Seq[XmlType] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
@@ -84,7 +89,7 @@ object Maps {
 /** Entry point for this utility. */
 object CodeForNode {
 
-  class Type(
+  private class Type(
     override val name: String = "",
     override val attributes: Map[String, XmlAttribute],
     val fieldNames: Map[String, Cardinality] = Map.empty,
@@ -107,7 +112,7 @@ object CodeForNode {
     }
   }
 
-  def apply(xml: NodeSeq) = {
+  def apply(xml: NodeSeq): XmlType = {
     val types = asTypes(xml)
     xml.head match { case e: Elem => types(e.label) }
   }
@@ -120,17 +125,12 @@ object CodeForNode {
       case elem: Elem => nodeByName = Maps.mergeMaps(
         append(elem),
         nodesByName(elem.child)) { (nodesOne, nodesTwo) => nodesOne ::: nodesTwo }
-      case node: Node => // ignore others
+      case _ => // ignore others
     }
     nodeByName
   }
 
-  def partitionChildren(xml: Node) = xml.child.partition {
-    case e: Elem => true
-    case other => false
-  }
-
-  def elemChildren(xml: Node) = partitionChildren(xml: Node)._1
+  private[codefornode] def elemChildren(xml: Node) = xml.child.collect { case e: Elem => e }
 
   def name(xml: NodeSeq) = xml match {
     case e: Elem => e.label
@@ -143,7 +143,7 @@ object CodeForNode {
   /** try and convert all the given nodes to a primitive type*/
   def asPrimitiveOption(nodes: Seq[Node]): Option[Primitive] = {
     def primOpt(e: Node) = {
-      if (elemChildren(e).size == 0 && e.attributes.isEmpty) {
+      if (elemChildren(e).isEmpty && e.attributes.isEmpty) {
         Some(Primitive(e.text))
       } else {
         None
@@ -179,7 +179,7 @@ object CodeForNode {
       new Type(name(n), atts, fieldNames, typeLookup = doLookup)
     }
 
-    def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) }
+    def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml.tail) { (xmlType, node) => xmlType.merge(newType(node)) }
 
     // we have to do a first pass to ensure all the types are populated
     //typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
