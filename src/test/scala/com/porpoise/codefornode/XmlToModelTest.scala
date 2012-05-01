@@ -27,15 +27,14 @@ class XmlToModelTest extends Spec {
     }
     it("should combine types for elements with the same names") {
       // call the method under test
-      val topType = CodeForNode(<foo title="some title"> <bar/><nested><bar name="n" age="123"/></nested></foo>)
-      println(topType)
-      println(topType.field("bar").fieldType)
       val model = XmlToModel(ns, <foo title="some title"> <bar/><nested><bar name="n" age="123"/></nested></foo>)
 
       val foo = model.getNamespace(ns).getDefinition("foo")
       println(foo)
       val bar = foo.getField("bar")
-      assert("%s.Bar".format(ns) === bar.getType, "the two 'bar' elements should have been merged to form a complex type")
+      val dt = bar.getDefinitionType
+      assert("Bar" === dt.getJavaType, "the two 'bar' elements should have been merged to form a complex type")
+      assert(2 === dt.getFields.size, "the two 'bar' elements should have been merged to form a complex type")
     }
   }
 }

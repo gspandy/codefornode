@@ -39,7 +39,6 @@ class CodeForNodeTest extends Spec {
       val Seq(title) = foo.allAttributes.toSeq
       assert("title" === title.name)
       assert(STRING === title.attType)
-      assert(AnnotationType.ATTRIBUTE === title.annotationType)
     }
     it("should convert int types to ints") {
       val foo = CodeForNode(<foo int="123"/>)
@@ -55,11 +54,9 @@ class CodeForNodeTest extends Spec {
       assert("bar" === bar.name)
       assert("name" === bar.attributes("name").name)
       assert(STRING === bar.attributes("name").attType)
-      assert(AnnotationType.ATTRIBUTE === bar.attributes("name").annotationType)
 
       assert("age" === bar.attributes("age").name)
       assert(INT === bar.attributes("age").attType)
-      assert(AnnotationType.ATTRIBUTE === bar.attributes("age").annotationType)
 
     }
     it("should combine type of the same name on the same level") {

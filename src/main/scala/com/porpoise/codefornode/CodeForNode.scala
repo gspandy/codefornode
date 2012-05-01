@@ -17,14 +17,6 @@ object Cardinality extends Enumeration {
 }
 import Cardinality._
 
-/** properties can be represented either via xml attribuses or elements in their own right */
-object AnnotationType extends Enumeration {
-  type AnnotationType = Value
-  val ATTRIBUTE, ELEMENT = Value
-}
-import AnnotationType._
-import Cardinality._
-
 /** An 'XmlField' represents a property of an XmlType */
 trait XmlField {
   def name: String
@@ -47,8 +39,8 @@ object XmlField {
   def apply(name: String, xmlType: XmlType, cardinality: Cardinality = OneToOne) = Field(name, xmlType, cardinality)
 }
 
-case class XmlAttribute(name: String, attType: Primitive, annotationType: AnnotationType = ATTRIBUTE) {
-  override def toString = "%s:%s[%s]".format(name, attType, annotationType)
+case class XmlAttribute(name: String, attType: Primitive) {
+  override def toString = "%s:%s".format(name, attType)
 }
 /** Within some XML, its xml elements are represented by XmlTypes */
 trait XmlType {
@@ -132,11 +124,6 @@ object CodeForNode {
 
   private[codefornode] def elemChildren(xml: Node) = xml.child.collect { case e: Elem => e }
 
-  def name(xml: NodeSeq) = xml match {
-    case e: Elem => e.label
-    case other => other.getClass.getSimpleName
-  }
-
   /** get the attributes as a map of attribute names to their primitive type */
   def attributes(xml: Node) = xml.attributes.asAttrMap.map { case (name, value) => name -> XmlAttribute(name, Primitive(value)) }
 
@@ -171,12 +158,13 @@ object CodeForNode {
       val kidsByName = elemChildren(n) groupBy (_.label)
       for ((name, childNodes) <- kidsByName) {
         val cardinality = if (childNodes.size == 1) { OneToOne } else { OneToMany }
-        asPrimitiveOption(childNodes) match {
-          case Some(primitiveType: Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
-          case None => fieldNames = fieldNames + (name -> cardinality)
-        }
+        //        asPrimitiveOption(childNodes) match {
+        //          case Some(primitiveType: Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
+        //          case None => fieldNames = fieldNames + (name -> cardinality)
+        //        }
+        fieldNames = fieldNames + (name -> cardinality)
       }
-      new Type(name(n), atts, fieldNames, typeLookup = doLookup)
+      new Type(n.label, atts, fieldNames, typeLookup = doLookup)
     }
 
     def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml.tail) { (xmlType, node) => xmlType.merge(newType(node)) }
