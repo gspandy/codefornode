@@ -9,7 +9,6 @@ import javax.swing.ButtonGroup;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.porpoise.codefornode.ui.Swing.OpenMode;
@@ -45,7 +44,12 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.initFromPrefs(this.textFieldDest, "");
         Swing.initFromPrefs(this.textFieldXml, "");
         Swing.initFromPrefs(this.textFieldPackage, "");
-        Swing.initFromPrefs(this.textAreaInputXml, "");
+
+        // reload the xml
+        // Swing.initFromPrefs(this.textAreaInputXml, "");
+        if (!this.textFieldXml.getText().isEmpty()) {
+            onFindXmlInput();
+        }
 
         final String language = Swing.getUserPreference("language", TargetLanguage.Scala.name());
 
@@ -389,10 +393,9 @@ public class CodeForNodePanel extends javax.swing.JPanel {
     }// GEN-LAST:event_buttonFindXmlKeyReleased
 
     private void onFindXmlInput() {
-        final String before = this.textFieldXml.getText();
         Swing.find(this, this.textFieldXml, OpenMode.FILES_ONLY);
         final String after = this.textFieldXml.getText();
-        if (!Objects.equal(before, after) && !after.isEmpty()) {
+        if (!after.isEmpty()) {
             final File file = new File(after);
             if (file.exists()) {
                 if (!file.isFile()) {
@@ -453,7 +456,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.savePrefs(this.textFieldPackage);
         Swing.savePrefs(this.textFieldXml);
         Swing.savePrefs(this.textFieldDest);
-        Swing.savePrefs(this.textAreaInputXml);
+        // Swing.savePrefs(this.textAreaInputXml);
         Swing.savePrefs("language", getTargetLanguage().name());
     }
 

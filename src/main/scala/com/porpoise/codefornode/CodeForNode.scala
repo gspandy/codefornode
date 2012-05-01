@@ -1,6 +1,5 @@
 package com.porpoise.codefornode
 import scala.xml._
-import scala.collection._
 
 object Properties {
   val VersionMinor = 0
@@ -59,9 +58,7 @@ trait XmlType {
   lazy val allAttributes = attributes.values
 
   def field(name: String) = fields.find(_.name == name).get
-  def types = {
-    fields.map(f => f.fieldType)
-  }
+  def types = fields.map(f => f.fieldType)
   def isEmpty = allAttributes.isEmpty && fields.isEmpty
   def allSubtypes: Seq[XmlType] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
   //lazy val uniqueSubtypes = allSubtypes.toSet
