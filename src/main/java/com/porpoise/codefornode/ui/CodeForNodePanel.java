@@ -14,10 +14,12 @@ import com.google.common.io.Files;
 import com.porpoise.codefornode.ui.Swing.OpenMode;
 
 /**
- * 
- * @author aaron.pritzlaff
  */
 public class CodeForNodePanel extends javax.swing.JPanel {
+
+    /**
+     */
+    private static final long serialVersionUID = 1L;
 
     public static interface Controller {
         /**
@@ -48,7 +50,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         // reload the xml
         // Swing.initFromPrefs(this.textAreaInputXml, "");
         if (!this.textFieldXml.getText().isEmpty()) {
-            onFindXmlInput();
+            loadXmlInput(new File(this.textFieldXml.getText()));
         }
 
         final String language = Swing.getUserPreference("language", TargetLanguage.Scala.name());
@@ -394,22 +396,26 @@ public class CodeForNodePanel extends javax.swing.JPanel {
 
     private void onFindXmlInput() {
         Swing.find(this, this.textFieldXml, OpenMode.FILES_ONLY);
-        final String after = this.textFieldXml.getText();
-        if (!after.isEmpty()) {
-            final File file = new File(after);
-            if (file.exists()) {
-                if (!file.isFile()) {
-                    Swing.showError(this, String.format("%s is not a file", file.getName()));
-                } else {
-                    try {
-                        final String xml = Files.toString(file, Charsets.UTF_8);
-                        setInputXml(xml);
-                    } catch (final Exception e) {
-                        Swing.showError(this, String.format("Error reading %s: %s", file.getName(), e.getMessage()));
-                    }
+        final String fileName = this.textFieldXml.getText();
+        if (!fileName.isEmpty()) {
+            loadXmlInput(new File(fileName));
+        }
+    }
+
+    private void loadXmlInput(final File file) {
+        if (file.exists()) {
+            if (!file.isFile()) {
+                Swing.showError(this, String.format("%s is not a file", file.getName()));
+            } else {
+                try {
+                    final String xml = Files.toString(file, Charsets.UTF_8);
+                    setInputXml(xml);
+                } catch (final Exception e) {
+                    Swing.showError(this, String.format("Error reading %s: %s", file.getName(), e.getMessage()));
                 }
             }
         }
+
     }
 
     private void setInputXml(final String xml) {
