@@ -18,6 +18,9 @@ object XmlToModel {
           for (att <- newType.allAttributes) {
             val newField = newDef.addField(att.name)
 
+            //TODO - required attributes
+            //newField.setRequired(att.required)
+
             newField.setAnnotations("@XmlAttribute")
             att.attType match {
               case INT => newField.setType(Types.lng())
@@ -38,6 +41,7 @@ object XmlToModel {
             if (f.cardinality == OneToMany) {
               newField.setCollectionType(CollectionType.LIST)
             }
+            newField.setRequired(f.required)
           }
         }
       }

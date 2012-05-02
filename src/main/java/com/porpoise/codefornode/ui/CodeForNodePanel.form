@@ -150,6 +150,7 @@
               <Properties>
                 <Property name="columns" type="int" value="20"/>
                 <Property name="rows" type="int" value="5"/>
+                <Property name="name" type="java.lang.String" value="outputTextArea" noResource="true"/>
               </Properties>
             </Component>
           </SubComponents>
@@ -157,6 +158,9 @@
       </SubComponents>
     </Container>
     <Component class="javax.swing.JTextField" name="textFieldDest">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="destinationDirectory" noResource="true"/>
+      </Properties>
       <Events>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="textFieldDestKeyReleased"/>
       </Events>
@@ -171,6 +175,9 @@
       </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="textFieldPackage">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="packageName" noResource="true"/>
+      </Properties>
       <Events>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="textFieldPackageKeyReleased"/>
       </Events>
@@ -251,11 +258,15 @@
               <Properties>
                 <Property name="columns" type="int" value="20"/>
                 <Property name="rows" type="int" value="5"/>
+                <Property name="name" type="java.lang.String" value="xmlTextArea" noResource="true"/>
               </Properties>
             </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JTextField" name="textFieldXml">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="inputXmlField" noResource="true"/>
+          </Properties>
           <Events>
             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="textFieldXmlKeyReleased"/>
           </Events>
