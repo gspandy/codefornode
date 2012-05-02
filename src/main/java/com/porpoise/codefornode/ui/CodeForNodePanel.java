@@ -1,5 +1,6 @@
 package com.porpoise.codefornode.ui;
 
+import java.awt.Image;
 import java.io.File;
 import java.util.List;
 
@@ -8,7 +9,6 @@ import javax.swing.ButtonGroup;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.porpoise.codefornode.ui.Swing.OpenMode;
@@ -44,7 +44,12 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.initFromPrefs(this.textFieldDest, "");
         Swing.initFromPrefs(this.textFieldXml, "");
         Swing.initFromPrefs(this.textFieldPackage, "");
-        Swing.initFromPrefs(this.textAreaInputXml, "");
+
+        // reload the xml
+        // Swing.initFromPrefs(this.textAreaInputXml, "");
+        if (!this.textFieldXml.getText().isEmpty()) {
+            onFindXmlInput();
+        }
 
         final String language = Swing.getUserPreference("language", TargetLanguage.Scala.name());
 
@@ -65,11 +70,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
                 return String.format("file=%s%ndest=%s%npckg=%s%nlang=%s", xml, destDir.getName(), pckg, language);
             }
         };
-<<<<<<< HEAD
-        showCodeForNode(c);
-=======
         showCodeForNode(c, "Code For Node", "panel demo");
->>>>>>> dev
     }
 
     /**
@@ -87,19 +88,15 @@ public class CodeForNodePanel extends javax.swing.JPanel {
     /**
      * @param c
      */
-<<<<<<< HEAD
-    public static void showCodeForNode(final Controller c) {
-        Swing.setDefaultTheme();
-        final CodeForNodePanel p = new CodeForNodePanel(c);
-        Swing.show("CodeForNode", p);
-=======
     public static void showCodeForNode(final Controller c, final String title, final String version) {
         Swing.setDefaultTheme();
+
+        // TODO
+        final Image icon = null;
         final CodeForNodePanel p = new CodeForNodePanel(c);
-        p.setVersion(version);
-        Swing.show(title, p);
->>>>>>> dev
         p.initFromPrefs();
+        p.setVersion(version);
+        Swing.show(title, p, icon);
     }
 
     /**
@@ -396,10 +393,9 @@ public class CodeForNodePanel extends javax.swing.JPanel {
     }// GEN-LAST:event_buttonFindXmlKeyReleased
 
     private void onFindXmlInput() {
-        final String before = this.textFieldXml.getText();
         Swing.find(this, this.textFieldXml, OpenMode.FILES_ONLY);
         final String after = this.textFieldXml.getText();
-        if (!Objects.equal(before, after) && !after.isEmpty()) {
+        if (!after.isEmpty()) {
             final File file = new File(after);
             if (file.exists()) {
                 if (!file.isFile()) {
@@ -460,7 +456,7 @@ public class CodeForNodePanel extends javax.swing.JPanel {
         Swing.savePrefs(this.textFieldPackage);
         Swing.savePrefs(this.textFieldXml);
         Swing.savePrefs(this.textFieldDest);
-        Swing.savePrefs(this.textAreaInputXml);
+        // Swing.savePrefs(this.textAreaInputXml);
         Swing.savePrefs("language", getTargetLanguage().name());
     }
 

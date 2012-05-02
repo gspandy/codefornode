@@ -1,6 +1,5 @@
 package com.porpoise.codefornode
 import scala.xml._
-import scala.collection._
 
 object Properties {
   val VersionMinor = 0
@@ -16,14 +15,6 @@ object Cardinality extends Enumeration {
 
   def mergeCardinality(a: Cardinality, b: Cardinality) = if (a == OneToMany || b == OneToMany) { OneToMany } else { OneToOne }
 }
-import Cardinality._
-
-/** properties can be represented either via xml attribuses or elements in their own right */
-object AnnotationType extends Enumeration {
-  type AnnotationType = Value
-  val ATTRIBUTE, ELEMENT = Value
-}
-import AnnotationType._
 import Cardinality._
 
 /** An 'XmlField' represents a property of an XmlType */
@@ -48,20 +39,23 @@ object XmlField {
   def apply(name: String, xmlType: XmlType, cardinality: Cardinality = OneToOne) = Field(name, xmlType, cardinality)
 }
 
-case class XmlAttribute(name: String, attType: Primitive, annotationType: AnnotationType = ATTRIBUTE) {
-  override def toString = "%s:%s[%s]".format(name, attType, annotationType)
+case class XmlAttribute(name: String, attType: Primitive) {
+  override def toString = "%s:%s".format(name, attType)
 }
 /** Within some XML, its xml elements are represented by XmlTypes */
 trait XmlType {
   def name: String
   def attributes: Map[String, XmlAttribute] = Map.empty
   def fields: Seq[XmlField]
-  lazy val allAttributes = attributes.values
 
-  def field(name: String) = fields.find(_.name == name).get
-  def types = {
-    fields.map(f => f.fieldType)
+  lazy val allAttributes: Iterable[XmlAttribute] = attributes.values
+
+  def field(name: String) = fieldOpt(name).getOrElse {
+    val err = "field '%s' not found. Fields are: %s".format(name, fields.map(_.name).mkString("[", ",", "]"))
+    throw new IllegalArgumentException(err)
   }
+  def fieldOpt(name: String) = fields.find(_.name == name)
+  def types = fields.map(f => f.fieldType)
   def isEmpty = allAttributes.isEmpty && fields.isEmpty
   def allSubtypes: Seq[XmlType] = types ++ fields.flatMap(f => f.fieldType.allSubtypes)
   //lazy val uniqueSubtypes = allSubtypes.toSet
@@ -87,7 +81,7 @@ object Maps {
 /** Entry point for this utility. */
 object CodeForNode {
 
-  class Type(
+  private class Type(
     override val name: String = "",
     override val attributes: Map[String, XmlAttribute],
     val fieldNames: Map[String, Cardinality] = Map.empty,
@@ -110,7 +104,7 @@ object CodeForNode {
     }
   }
 
-  def apply(xml: NodeSeq) = {
+  def apply(xml: NodeSeq): XmlType = {
     val types = asTypes(xml)
     xml.head match { case e: Elem => types(e.label) }
   }
@@ -123,22 +117,12 @@ object CodeForNode {
       case elem: Elem => nodeByName = Maps.mergeMaps(
         append(elem),
         nodesByName(elem.child)) { (nodesOne, nodesTwo) => nodesOne ::: nodesTwo }
-      case node: Node => // ignore others
+      case _ => // ignore others
     }
     nodeByName
   }
 
-  def partitionChildren(xml: Node) = xml.child.partition {
-    case e: Elem => true
-    case other => false
-  }
-
-  def elemChildren(xml: Node) = partitionChildren(xml: Node)._1
-
-  def name(xml: NodeSeq) = xml match {
-    case e: Elem => e.label
-    case other => other.getClass.getSimpleName
-  }
+  private[codefornode] def elemChildren(xml: Node) = xml.child.collect { case e: Elem => e }
 
   /** get the attributes as a map of attribute names to their primitive type */
   def attributes(xml: Node) = xml.attributes.asAttrMap.map { case (name, value) => name -> XmlAttribute(name, Primitive(value)) }
@@ -146,7 +130,7 @@ object CodeForNode {
   /** try and convert all the given nodes to a primitive type*/
   def asPrimitiveOption(nodes: Seq[Node]): Option[Primitive] = {
     def primOpt(e: Node) = {
-      if (elemChildren(e).size == 0 && e.attributes.isEmpty) {
+      if (elemChildren(e).isEmpty && e.attributes.isEmpty) {
         Some(Primitive(e.text))
       } else {
         None
@@ -174,15 +158,16 @@ object CodeForNode {
       val kidsByName = elemChildren(n) groupBy (_.label)
       for ((name, childNodes) <- kidsByName) {
         val cardinality = if (childNodes.size == 1) { OneToOne } else { OneToMany }
-        asPrimitiveOption(childNodes) match {
-          case Some(primitiveType: Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
-          case None => fieldNames = fieldNames + (name -> cardinality)
-        }
+        //        asPrimitiveOption(childNodes) match {
+        //          case Some(primitiveType: Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
+        //          case None => fieldNames = fieldNames + (name -> cardinality)
+        //        }
+        fieldNames = fieldNames + (name -> cardinality)
       }
-      new Type(name(n), atts, fieldNames, typeLookup = doLookup)
+      new Type(n.label, atts, fieldNames, typeLookup = doLookup)
     }
 
-    def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml) { (xmlType, node) => xmlType.merge(newType(node)) }
+    def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml.tail) { (xmlType, node) => xmlType.merge(newType(node)) }
 
     // we have to do a first pass to ensure all the types are populated
     //typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))

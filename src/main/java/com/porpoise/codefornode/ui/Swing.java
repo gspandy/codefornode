@@ -2,6 +2,7 @@ package com.porpoise.codefornode.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -51,9 +52,14 @@ public enum Swing {
     }
 
     public static JFrame show(final String title, final Component component) {
+        return show(title, component, null);
+    }
+
+    public static JFrame show(final String title, final Component component, final Image icon) {
         final JFrame host = new JFrame(title);
         host.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         host.getContentPane().add(component, BorderLayout.CENTER);
+        host.setIconImage(icon);
         host.pack();
         host.setVisible(true);
         return host;
