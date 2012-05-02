@@ -17,11 +17,28 @@ object Cardinality extends Enumeration {
 }
 import Cardinality._
 
-/** An 'XmlField' represents a property of an XmlType */
-trait XmlField {
-  def name: String
-  def fieldType: XmlType
-  def cardinality: Cardinality = OneToOne
+private[codefornode] case class Occurrence(min: Int, max: Int) {
+  def this(instances: Int) = this(instances, instances)
+  require(min <= max)
+  require(min >= 0)
+
+  lazy val cardinality: Cardinality = {
+    if (max > 1)
+      Cardinality.OneToMany
+    else
+      Cardinality.OneToOne
+  }
+  def required: Boolean = min > 0
+
+  def merge(other: Occurrence): Occurrence = Occurrence(min.min(other.min), max.max(other.max))
+}
+
+case class XmlField(name: String,
+  fieldType: XmlType,
+  occurrences: Occurrence) {
+
+  def cardinality = occurrences.cardinality
+  def required = occurrences.required
 
   lazy val cardString = if (cardinality == OneToOne) "1" else "*"
   override def toString = "%s:%s(%s)".format(name, fieldType.name, cardString)
@@ -29,14 +46,9 @@ trait XmlField {
   def merge(other: XmlField) = {
     assert(name == other.name)
     assert(fieldType.name == other.fieldType.name)
-    val c = mergeCardinality(cardinality, other.cardinality)
-    XmlField(name, fieldType, c)
+    XmlField(name, fieldType, occurrences.merge(other.occurrences))
   }
-}
-/** Companion object for XmlFields */
-object XmlField {
-  case class Field(override val name: String, override val fieldType: XmlType, override val cardinality: Cardinality) extends XmlField
-  def apply(name: String, xmlType: XmlType, cardinality: Cardinality = OneToOne) = Field(name, xmlType, cardinality)
+
 }
 
 case class XmlAttribute(name: String, attType: Primitive) {
@@ -53,6 +65,10 @@ trait XmlType {
   def field(name: String) = fieldOpt(name).getOrElse {
     val err = "field '%s' not found. Fields are: %s".format(name, fields.map(_.name).mkString("[", ",", "]"))
     throw new IllegalArgumentException(err)
+  }
+  def fieldByName = fields.groupBy(_.name).mapValues { v =>
+    val Seq(only) = v.toSeq
+    only
   }
   def fieldOpt(name: String) = fields.find(_.name == name)
   def types = fields.map(f => f.fieldType)
@@ -82,24 +98,30 @@ object Maps {
 object CodeForNode {
 
   private class Type(
-    override val name: String = "",
+    override val name: String,
     override val attributes: Map[String, XmlAttribute],
-    val fieldNames: Map[String, Cardinality] = Map.empty,
+    val fieldOccurrenceByName: Map[String, Occurrence],
     typeLookup: String => XmlType) extends XmlType {
-    lazy val fieldsByName: Map[String, XmlField] = fieldNames map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
+    lazy val fieldsByName: Map[String, XmlField] = fieldOccurrenceByName map { case (name, value) => name -> XmlField(name, typeLookup(name), value) }
     lazy override val fields: Seq[XmlField] = fieldsByName.values.toSeq
-    override def isEmpty = attributes.isEmpty && fieldNames.isEmpty
+    override def isEmpty = attributes.isEmpty && fieldsByName.isEmpty
+
     override def merge(other: XmlType) = {
       assert(other.name == name)
 
       val allAtts = attributes ++ other.attributes
-      val allFieldNames = other match {
-        case t: Type => Maps.mergeMaps(fieldNames, t.fieldNames) { (first, second) =>
-          Cardinality.mergeCardinality(first, second)
-        }
+      val mergedOccurrences = other match {
+        case t: Type =>
+          val mapOne = fieldOccurrenceByName
+          val mapTwo = t.fieldOccurrenceByName
+          (mapOne.keySet ++ mapTwo.keySet).map { fieldName =>
+            val a = mapOne.getOrElse(fieldName, new Occurrence(0))
+            val b = mapTwo.getOrElse(fieldName, new Occurrence(0))
+            fieldName -> a.merge(b)
+          }
       }
 
-      val merged = new Type(name, allAtts, allFieldNames, typeLookup)
+      val merged = new Type(name, allAtts, mergedOccurrences.toMap, typeLookup)
       merged
     }
   }
@@ -147,32 +169,18 @@ object CodeForNode {
 
   def asTypes(xml: NodeSeq): Map[String, XmlType] = {
     var typesByName: Map[String, XmlType] = Map.empty
-
-    val nodesMap = nodesByName(xml)
-
-    val doLookup: String => XmlType = (key: String) => typesByName.apply(key)
+    val typeLookup: String => XmlType = (key: String) => typesByName.apply(key)
 
     def newType(n: Node): XmlType = {
-      var atts: Map[String, XmlAttribute] = attributes(n)
-      var fieldNames: Map[String, Cardinality] = Map.empty
-      val kidsByName = elemChildren(n) groupBy (_.label)
-      for ((name, childNodes) <- kidsByName) {
-        val cardinality = if (childNodes.size == 1) { OneToOne } else { OneToMany }
-        //        asPrimitiveOption(childNodes) match {
-        //          case Some(primitiveType: Primitive) => atts = atts + (name -> XmlAttribute(name, primitiveType, ELEMENT))
-        //          case None => fieldNames = fieldNames + (name -> cardinality)
-        //        }
-        fieldNames = fieldNames + (name -> cardinality)
-      }
-      new Type(n.label, atts, fieldNames, typeLookup = doLookup)
+      val atts: Map[String, XmlAttribute] = attributes(n)
+      val fieldOccurrenceByName: Map[String, Occurrence] = elemChildren(n) groupBy (_.label) mapValues (childNodes => new Occurrence(childNodes.size))
+      new Type(n.label, atts, fieldOccurrenceByName, typeLookup = typeLookup)
     }
 
     def mergeXml(xml: Seq[Node]): XmlType = (newType(xml.head) /: xml.tail) { (xmlType, node) => xmlType.merge(newType(node)) }
 
-    // we have to do a first pass to ensure all the types are populated
-    //typesByName = typesByName ++ nodesMap.mapValues(nodes => newType(nodes.head))
-    typesByName = typesByName ++ nodesMap.mapValues(mergeXml _)
-    typesByName filterNot { case (k, v) => v.isEmpty }
+    val nodesMap = nodesByName(xml)
+    typesByName = nodesMap.mapValues(mergeXml _)
     typesByName
   }
 }

@@ -31,6 +31,20 @@ class CodeForNodeTest extends Spec {
               </alpha>
             </root>
 
+  describe("CodeForNode.asTypes required field") {
+    it("should return 'required' for nodes which always appear") {
+      val typesByName = CodeForNode.asTypes(<a><b><c/></b><b><c/></b></a>)
+      assert(typesByName("a").field("b").required)
+      assert(typesByName("b").field("c").required)
+    }
+    it("should return 'not required' for nodes which are not always present") {
+      val typesByName = CodeForNode.asTypes(<a><b><c/></b><b/></a>)
+      assert(typesByName("a").field("b").required)
+      assert(!typesByName("b").field("c").required)
+
+    }
+
+  }
   describe("CodeForNode.asTypes") {
 
     it("should convert string types to strings") {

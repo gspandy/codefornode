@@ -30,7 +30,6 @@ class XmlToModelTest extends Spec {
       val model = XmlToModel(ns, <foo title="some title"> <bar/><nested><bar name="n" age="123"/></nested></foo>)
 
       val foo = model.getNamespace(ns).getDefinition("foo")
-      println(foo)
       val bar = foo.getField("bar")
       val dt = bar.getDefinitionType
       assert("Bar" === dt.getJavaType, "the two 'bar' elements should have been merged to form a complex type")
